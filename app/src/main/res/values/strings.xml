@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">PetPal</string>
+    <string name="default_web_client_id">firebase-adminsdk-fbsvc@petpal-pam.iam.gserviceaccount.com</string>
+</resources>
