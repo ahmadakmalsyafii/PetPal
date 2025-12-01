@@ -1,4 +1,4 @@
-package com.example.petpal.ui.view
+package com.example.petpal.presentation.view
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,8 +20,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.petpal.ui.component.PetCard
-import com.example.petpal.ui.viewmodel.HomeViewModel
+import com.example.petpal.presentation.component.PetCard
+import com.example.petpal.presentation.viewmodel.HomeViewModel
 import com.example.petpal.utils.UiState
 
 @Composable

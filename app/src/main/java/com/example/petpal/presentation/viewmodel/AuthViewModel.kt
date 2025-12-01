@@ -1,4 +1,4 @@
-package com.example.petpal.ui.viewmodel
+package com.example.petpal.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

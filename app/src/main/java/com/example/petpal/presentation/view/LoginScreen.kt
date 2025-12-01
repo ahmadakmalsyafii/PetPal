@@ -1,7 +1,6 @@
-package com.example.petpal.ui.view
+package com.example.petpal.presentation.view
 
 import android.app.Activity
-import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -15,7 +14,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.petpal.R
-import com.example.petpal.ui.viewmodel.AuthViewModel
+import com.example.petpal.presentation.viewmodel.AuthViewModel
 import com.example.petpal.utils.UiState
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions

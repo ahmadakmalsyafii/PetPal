@@ -1,19 +1,19 @@
-package com.example.petpal.navigation
+package com.example.petpal.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.example.petpal.ui.view.HomeScreen // You will need to create this screen
-import com.example.petpal.ui.view.LoginScreen
-import com.example.petpal.ui.view.RegisterScreen
+import com.example.petpal.presentation.view.HomeScreen // You will need to create this screen
+import com.example.petpal.presentation.view.LoginScreen
+import com.example.petpal.presentation.view.OnBoardingScreen
+import com.example.petpal.presentation.view.RegisterScreen
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Login.route
+        startDestination = Screen.OnBoarding.route
     ) {
         composable(Screen.Login.route) {
             LoginScreen(
@@ -51,6 +51,13 @@ fun AppNavigation(navController: NavHostController) {
                         launchSingleTop = true
                     }
                 }
+            )
+        }
+
+        composable(Screen.OnBoarding.route) {
+            OnBoardingScreen(
+                onNavigateToLogin = { navController.navigate(Screen.Login.route) },
+                onNavigateToRegister = { navController.navigate(Screen.Register.route) }
             )
         }
     }

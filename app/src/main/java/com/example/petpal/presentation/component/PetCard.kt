@@ -1,4 +1,4 @@
-package com.example.petpal.ui.component
+package com.example.petpal.presentation.component
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*

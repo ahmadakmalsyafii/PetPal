@@ -1,4 +1,4 @@
-package com.example.petpal.ui.view
+package com.example.petpal.presentation.view
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -21,7 +21,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.petpal.ui.viewmodel.AuthViewModel
+import com.example.petpal.presentation.viewmodel.AuthViewModel
 import com.example.petpal.utils.UiState
 
 @OptIn(ExperimentalMaterial3Api::class)
