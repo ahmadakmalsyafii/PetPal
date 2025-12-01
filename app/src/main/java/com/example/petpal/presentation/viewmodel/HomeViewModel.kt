@@ -29,5 +29,9 @@ class HomeViewModel : ViewModel() {
                 _uiState.value = UiState.Error(e.message ?: "Terjadi kesalahan")
             }
         }
+
+
     }
+
 }
+

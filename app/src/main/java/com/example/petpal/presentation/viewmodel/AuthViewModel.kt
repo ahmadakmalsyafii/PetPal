@@ -28,11 +28,13 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    fun register(email: String, pass: String) {
+    // Update parameter register
+    fun register(email: String, pass: String, name: String, phone: String) {
         viewModelScope.launch {
             _authState.value = UiState.Loading
             try {
-                val user = repository.registerWithEmail(email, pass)
+                // Panggil fungsi repo yang baru
+                val user = repository.registerWithEmail(email, pass, name, phone)
                 _authState.value = UiState.Success(user)
             } catch (e: Exception) {
                 _authState.value = UiState.Error(e.message ?: "Register Gagal")

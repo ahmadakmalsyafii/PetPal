@@ -1,61 +1,83 @@
 package com.example.petpal.presentation.view
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.petpal.presentation.component.PetCard
+import com.example.petpal.presentation.component.PetPalPrimaryButton
 import com.example.petpal.presentation.viewmodel.HomeViewModel
+import com.example.petpal.presentation.theme.White
+import com.example.petpal.presentation.theme.BlackText
 import com.example.petpal.utils.UiState
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = viewModel(),onLogout: () -> Unit) {
+fun HomeScreen(viewModel: HomeViewModel = viewModel(), onLogout: () -> Unit) {
     val state by viewModel.uiState.collectAsState()
 
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        when (val result = state) {
-            is UiState.Loading -> CircularProgressIndicator()
-            is UiState.Error -> Text(text = result.message)
-            is UiState.Success -> {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(result.data) { pet ->
-                        PetCard(pet = pet)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(White)
+            .windowInsetsPadding(WindowInsets.systemBars)
+    ) {
+        // Header Sederhana
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Daftar Hewan",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = BlackText
+            )
+        }
+
+        // Konten List / Error / Loading
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            when (val result = state) {
+                is UiState.Loading -> CircularProgressIndicator()
+                is UiState.Error -> Text(text = result.message, color = Color.Red)
+                is UiState.Success -> {
+                    if (result.data.isEmpty()) {
+                        Text(text = "Belum ada data hewan.", color = Color.Gray)
+                    } else {
+                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                            items(result.data) { pet ->
+                                PetCard(pet = pet)
+                            }
+                        }
                     }
                 }
             }
         }
-    }
 
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "Welcome to Home Screen",
-            style = MaterialTheme.typography.headlineMedium
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(onClick = onLogout) {
-            Text("Logout")
+        // Tombol Logout di Bawah
+        Box(modifier = Modifier.padding(16.dp)) {
+            PetPalPrimaryButton(
+                text = "Keluar",
+                onClick = onLogout
+            )
         }
     }
 }

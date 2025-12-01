@@ -1,30 +1,39 @@
 package com.example.petpal.presentation.view
 
 import android.widget.Toast
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-//import androidx.compose.material.icons.filled.Visibility
-//import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.petpal.R
+import com.example.petpal.presentation.component.PetPalPrimaryButton
+import com.example.petpal.presentation.component.PetPalTextField
 import com.example.petpal.presentation.viewmodel.AuthViewModel
+import com.example.petpal.presentation.theme.PetPalDarkGreen
+import com.example.petpal.presentation.theme.White
+import com.example.petpal.presentation.theme.GrayText
+import com.example.petpal.presentation.theme.BlackText
 import com.example.petpal.utils.UiState
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
     viewModel: AuthViewModel = viewModel(),
@@ -34,145 +43,133 @@ fun RegisterScreen(
     val context = LocalContext.current
     val authState by viewModel.authState.collectAsState()
 
-    var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
+    var phoneNumber by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    var isPasswordVisible by remember { mutableStateOf(false) }
 
-    // Observer State
     LaunchedEffect(authState) {
         if (authState is UiState.Success && (authState as UiState.Success).data != null) {
             Toast.makeText(context, "Registrasi Berhasil!", Toast.LENGTH_SHORT).show()
             onRegisterSuccess()
         }
+        if (authState is UiState.Error) {
+            Toast.makeText(context, (authState as UiState.Error).message, Toast.LENGTH_LONG).show()
+        }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Daftar Akun") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateToLogin) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Kembali")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Gabung PetPal",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(bottom = 32.dp)
-            )
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(White)
+            .windowInsetsPadding(WindowInsets.systemBars)
+            .padding(horizontal = 24.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(40.dp))
 
-            // Input Nama
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Nama Lengkap") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
+        // 1. Logo Kecil
+        Image(
+            painter = painterResource(id = R.drawable.logo_petpal),
+            contentDescription = "PetPal Logo",
+            modifier = Modifier.size(60.dp)
+        )
+        Text(
+            text = "PetPal",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = PetPalDarkGreen
+        )
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(30.dp))
 
-            // Input Email
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-            )
+        // 2. Judul
+        Text(
+            text = "Daftar",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = BlackText,
+            modifier = Modifier.align(Alignment.Start)
+        )
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-            // Input Password
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
-                        Icon(
-                            imageVector = if (isPasswordVisible) Icons.Filled.Info else Icons.Filled.Lock,
-                            contentDescription = "Toggle Password"
-                        )
-                    }
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-            )
+        // 3. Form Input
+        PetPalTextField(
+            label = "Email",
+            value = email,
+            onValueChange = { email = it },
+            placeholder = "Email",
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+        )
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            // Input Konfirmasi Password
-            OutlinedTextField(
-                value = confirmPassword,
-                onValueChange = { confirmPassword = it },
-                label = { Text("Konfirmasi Password") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                isError = password.isNotEmpty() && confirmPassword.isNotEmpty() && password != confirmPassword
-            )
+        PetPalTextField(
+            label = "No. Telepon",
+            value = phoneNumber,
+            onValueChange = { phoneNumber = it },
+            placeholder = "085",
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+        )
 
-            if (password.isNotEmpty() && confirmPassword.isNotEmpty() && password != confirmPassword) {
-                Text(
-                    text = "Password tidak sama",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.align(Alignment.Start)
-                )
-            }
+        Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(32.dp))
+        PetPalTextField(
+            label = "Nama",
+            value = name,
+            onValueChange = { name = it },
+            placeholder = "Username",
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+        )
 
-            Button(
+        Spacer(modifier = Modifier.height(16.dp))
+
+        PetPalTextField(
+            label = "Kata Sandi",
+            value = password,
+            onValueChange = { password = it },
+            placeholder = "Password",
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+        )
+
+        Spacer(modifier = Modifier.height(40.dp))
+
+        // 4. Tombol Daftar
+        if (authState is UiState.Loading) {
+            CircularProgressIndicator(color = PetPalDarkGreen)
+        } else {
+            PetPalPrimaryButton(
+                text = "Daftar",
                 onClick = {
-                    if (password == confirmPassword && email.isNotEmpty() && name.isNotEmpty()) {
-                        viewModel.register(email, password)
+                    if (email.isNotEmpty() && phoneNumber.isNotEmpty() && name.isNotEmpty() && password.isNotEmpty()) {
+                        viewModel.register(email, password, name, phoneNumber)
                     } else {
-                        Toast.makeText(context, "Mohon lengkapi data dengan benar", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Mohon lengkapi semua data", Toast.LENGTH_SHORT).show()
                     }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = authState !is UiState.Loading
-            ) {
-                if (authState is UiState.Loading) {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
-                } else {
-                    Text("Daftar Sekarang")
                 }
-            }
+            )
+        }
 
-            // Error Message
-            if (authState is UiState.Error) {
-                Text(
-                    text = (authState as UiState.Error).message,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(top = 16.dp)
-                )
-            }
+        Spacer(modifier = Modifier.weight(1f))
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            TextButton(onClick = onNavigateToLogin) {
-                Text("Sudah punya akun? Login")
+        // 5. Footer
+        val annotatedString = buildAnnotatedString {
+            append("Sudah Punya akun? ")
+            withStyle(style = SpanStyle(color = BlackText, fontWeight = FontWeight.Bold)) {
+                append("Masuk")
             }
         }
+
+        Text(
+            text = annotatedString,
+            modifier = Modifier
+                .padding(vertical = 32.dp)
+                .clickable { onNavigateToLogin() },
+            fontSize = 14.sp,
+            color = GrayText
+        )
     }
 }
