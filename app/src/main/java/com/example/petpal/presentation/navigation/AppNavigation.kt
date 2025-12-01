@@ -33,10 +33,11 @@ fun AppNavigation(navController: NavHostController) {
         composable(Screen.Login.route) {
             LoginScreen(
                 onNavigateToRegister = {
-                    navController.navigate(Screen.Register.route)
+                    navController.navigate(Screen.Register.route){
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
                 },
                 onLoginSuccess = {
-                    // Bersihkan backstack agar tidak bisa kembali ke login
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.OnBoarding.route) { inclusive = true }
                     }
@@ -48,7 +49,9 @@ fun AppNavigation(navController: NavHostController) {
         composable(Screen.Register.route) {
             RegisterScreen(
                 onNavigateToLogin = {
-                    navController.popBackStack() // Kembali ke Login
+                    navController.navigate(Screen.Login.route){
+                        popUpTo(Screen.Register.route) { inclusive = true }
+                    }
                 },
                 onRegisterSuccess = {
                     // Langsung ke Home setelah sukses daftar

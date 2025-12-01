@@ -48,7 +48,7 @@ fun HomeScreen(viewModel: HomeViewModel = viewModel(), onLogout: () -> Unit) {
             )
         }
 
-        // Konten List / Error / Loading
+
         Box(
             modifier = Modifier
                 .weight(1f)

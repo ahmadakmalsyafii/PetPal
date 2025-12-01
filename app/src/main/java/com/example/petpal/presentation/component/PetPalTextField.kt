@@ -38,7 +38,7 @@ fun PetPalTextField(
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold,
             color = BlackText, // Langsung Hitam
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = 4.dp)
         )
 
         // Input Field

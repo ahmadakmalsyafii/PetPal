@@ -10,6 +10,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -17,6 +18,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,16 +57,18 @@ fun LoginScreen(
     val context = LocalContext.current
     val authState by viewModel.authState.collectAsState()
 
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var isPasswordVisible by remember { mutableStateOf(false) }
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
+    var isPasswordVisible by rememberSaveable { mutableStateOf(false) }
+    var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
 
-    // Google Sign In Setup
+    // Setup Google Sign In
     val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
         .requestIdToken(context.getString(R.string.default_web_client_id))
         .requestEmail()
         .build()
     val googleSignInClient = GoogleSignIn.getClient(context, gso)
+
     val googleLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
@@ -74,14 +79,26 @@ fun LoginScreen(
                     viewModel.loginWithGoogleCredential(credential)
                 }
             } catch (e: ApiException) {
-                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                errorMessage = "Google Sign In Error: ${e.message}"
             }
         }
     }
 
+    // Observer Auth State
     LaunchedEffect(authState) {
-        if (authState is UiState.Success && (authState as UiState.Success).data != null) {
-            onLoginSuccess()
+        when (val state = authState) {
+            is UiState.Success -> {
+                if (state.data != null) {
+                    errorMessage = null
+                    onLoginSuccess()
+                }
+            }
+            is UiState.Error -> {
+                errorMessage = state.message // Tangkap pesan error dari ViewModel
+            }
+            is UiState.Loading -> {
+                errorMessage = null
+            }
         }
     }
 
@@ -89,7 +106,7 @@ fun LoginScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(White)
-            .windowInsetsPadding(WindowInsets.systemBars) // Aman dari navigasi HP
+            .windowInsetsPadding(WindowInsets.systemBars)
             .padding(horizontal = 24.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -109,24 +126,42 @@ fun LoginScreen(
             color = PetPalDarkGreen
         )
 
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
-        // 2. Input Email (Custom Component)
+        errorMessage?.let { msg ->
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = msg,
+                color = Color.Red,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        // 2. Input Email
         PetPalTextField(
             label = "Email",
             value = email,
-            onValueChange = { email = it },
+            onValueChange = {
+                email = it
+                errorMessage = null // Hapus error saat user mengetik ulang
+            },
             placeholder = "Email",
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        // 3. Input Password (Custom Component)
+        // 3. Input Password
         PetPalTextField(
             label = "Kata Sandi",
             value = password,
-            onValueChange = { password = it },
+            onValueChange = {
+                password = it
+                errorMessage = null
+            },
             placeholder = "Kata Sandi",
             visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -142,19 +177,19 @@ fun LoginScreen(
         )
 
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        // 4. Tombol Masuk (Custom Component)
+        // 4. Tombol Masuk
         if (authState is UiState.Loading) {
             CircularProgressIndicator(color = PetPalDarkGreen)
         } else {
             PetPalPrimaryButton(
                 text = "Masuk",
                 onClick = {
-                    if (email.isNotEmpty() && password.isNotEmpty()) {
-                        viewModel.login(email, password)
+                    if (email.isEmpty() || password.isEmpty()) {
+                        errorMessage = "Mohon isi email dan kata sandi"
                     } else {
-                        Toast.makeText(context, "Mohon lengkapi semua data", Toast.LENGTH_SHORT).show()
+                        viewModel.login(email, password)
                     }
                 }
             )
@@ -181,15 +216,41 @@ fun LoginScreen(
 
         // 6. Google Sign In
         Surface(
-            onClick = { googleLauncher.launch(googleSignInClient.signInIntent) },
-            shape = CircleShape,
+            onClick = {
+                googleSignInClient.signOut().addOnCompleteListener {
+                    googleLauncher.launch(googleSignInClient.signInIntent)
+                }
+            },
+            shape = RoundedCornerShape(32.dp),
             shadowElevation = 4.dp,
             color = White,
-            modifier = Modifier.size(50.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
         ) {
-            Box(contentAlignment = Alignment.Center) {
-                // Ganti Text "G" dengan Image resource logo google jika ada
-                Text("G", fontWeight = FontWeight.Bold, fontSize = 24.sp, color = Color.Red)
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        "Sign in with Google",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        color = PetPalDarkGreen
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Image(
+                        painter = painterResource(id = R.drawable.logo_google),
+                        contentDescription = "Logo Google",
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
         }
 
