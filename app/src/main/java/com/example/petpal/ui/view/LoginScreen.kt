@@ -25,6 +25,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 @Composable
 fun LoginScreen(
     viewModel: AuthViewModel = viewModel(),
+    onNavigateToRegister: () -> Unit,
     onLoginSuccess: () -> Unit
 ) {
     val context = LocalContext.current
@@ -102,7 +103,7 @@ fun LoginScreen(
         }
 
         OutlinedButton(
-            onClick = { viewModel.register(email, password) },
+            onClick = { onNavigateToRegister() },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Register")

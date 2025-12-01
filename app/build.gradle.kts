@@ -67,7 +67,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     // Navigation Compose
-    implementation("androidx.navigation:navigation-compose:2.7.5")
+    implementation("androidx.navigation:navigation-compose:2.7.7")
 
     // ViewModel & Lifecycle
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
@@ -84,5 +84,10 @@ dependencies {
 
     // Image Loading (Coil) - Penting untuk menampilkan foto hewan/live cam snapshot
     implementation("io.coil-kt:coil-compose:2.5.0")
+
+
+//    implementation ("androidx.compose.material:material-icons-extended:<version>")
+    implementation ("androidx.compose.material:material:1.9.5")
+
 
 }
