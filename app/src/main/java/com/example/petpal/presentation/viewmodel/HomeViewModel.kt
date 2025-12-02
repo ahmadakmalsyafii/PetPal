@@ -23,8 +23,8 @@ class HomeViewModel : ViewModel() {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
             try {
-                val pets = repository.getAllPets()
-                _uiState.value = UiState.Success(pets)
+//                val pets = repository.getAllPets()
+//                _uiState.value = UiState.Success(pets)
             } catch (e: Exception) {
                 _uiState.value = UiState.Error(e.message ?: "Terjadi kesalahan")
             }

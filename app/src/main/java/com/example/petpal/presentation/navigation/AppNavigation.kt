@@ -13,11 +13,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.petpal.data.repository.AuthRepository
 import com.example.petpal.presentation.component.PetPalBottomBar
+import com.example.petpal.presentation.view.AddPetScreen
 import com.example.petpal.presentation.view.ChangePasswordScreen
 import com.example.petpal.presentation.view.EditProfileScreen
 import com.example.petpal.presentation.view.HomeScreen
 import com.example.petpal.presentation.view.LoginScreen
 import com.example.petpal.presentation.view.OnBoardingScreen
+import com.example.petpal.presentation.view.PetListScreen
 import com.example.petpal.presentation.view.ProfileScreen
 import com.example.petpal.presentation.view.RegisterScreen
 
@@ -101,8 +103,9 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 Text("Halaman Riwayat")
             }
             composable(Screen.Profile.route) {
-                ProfileScreen (
+                ProfileScreen(
                     onNavigateToEditProfile = { navController.navigate(Screen.EditProfile.route) },
+                    onNavigateToPetList = { navController.navigate(Screen.PetList.route) },
                     onLogout = {
                         navController.navigate(Screen.Login.route) {
                             popUpTo(0) { inclusive = true }
@@ -120,6 +123,19 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             }
             composable(Screen.ChangePassword.route) {
                 ChangePasswordScreen (
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.PetList.route) {
+                PetListScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToAddPet = { navController.navigate(Screen.AddPet.route) }
+                )
+            }
+
+            composable(Screen.AddPet.route) {
+                AddPetScreen(
                     onNavigateBack = { navController.popBackStack() }
                 )
             }

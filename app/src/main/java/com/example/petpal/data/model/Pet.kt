@@ -5,7 +5,8 @@ data class Pet (
     val name: String = "",
     val type: String = "",
     val ownerId: String = "",
-    val age: Int = 0,
+    val gender: String = "",
+    val age: String = "",
     val photoUrl: String = "",
     val notes: String = ""
 )

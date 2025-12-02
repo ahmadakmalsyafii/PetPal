@@ -15,4 +15,7 @@ sealed class Screen(val route: String) {
     // Sub-Screens
     object EditProfile : Screen("edit_profile")
     object ChangePassword : Screen("change_password")
+
+    object PetList : Screen("pet_list")
+    object AddPet : Screen("add_pet")
 }
