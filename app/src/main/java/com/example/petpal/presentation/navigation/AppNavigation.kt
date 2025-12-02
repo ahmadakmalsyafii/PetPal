@@ -18,10 +18,6 @@ import com.example.petpal.data.repository.AuthRepository
 import com.example.petpal.data.model.Pet
 import com.example.petpal.presentation.view.AddPetScreen
 import com.example.petpal.presentation.view.ChangePasswordScreen
-import com.example.petpal.presentation.view.EditProfileScreen
-import com.example.petpal.presentation.view.HistoryScreen
-import com.example.petpal.presentation.view.HomeScreen
-import com.example.petpal.presentation.view.LoginScreen
 import com.example.petpal.presentation.view.AddPetScreen
 import com.example.petpal.presentation.view.BranchSelectionScreen
 import com.example.petpal.presentation.view.ChangePasswordScreen
@@ -32,6 +28,7 @@ import com.example.petpal.presentation.view.LoginScreen
 import com.example.petpal.presentation.view.OnBoardingScreen
 import com.example.petpal.presentation.view.OrderFormScreen
 import com.example.petpal.presentation.view.PaymentScreen
+import com.example.petpal.presentation.view.PaymentMethodSelectionScreen
 import com.example.petpal.presentation.view.PemesananScreen
 import com.example.petpal.presentation.view.PetListScreen
 import com.example.petpal.presentation.view.PetSelectionScreen
@@ -230,9 +227,10 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                         }
                         navController.navigate(Screen.BranchSelection.route)
                     },
-                    onSubmitOrder = { petNames, sTime, sDate, eTime, eDate, tier, branch, notes, duration, tPrice, total ->
+                    onSubmitOrder = { pets, petNames, sTime, sDate, eTime, eDate, tier, branch, notes, duration, tPrice, total ->
                         navController.currentBackStackEntry?.savedStateHandle?.apply {
                             set("payment_service_type", serviceType)
+                            set("payment_pets", pets)
                             set("payment_pet_names", petNames)
                             set("payment_start_time", sTime)
                             set("payment_start_date", sDate)
@@ -240,6 +238,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                             set("payment_end_date", eDate)
                             set("payment_tier", tier)
                             set("payment_branch", branch)
+                            set("payment_notes", notes)
                             set("payment_duration", duration)
                             set("payment_tier_price", tPrice)
                             set("payment_total_price", total)
@@ -357,6 +356,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 val savedStateHandle = previousEntry?.savedStateHandle
 
                 val serviceType = savedStateHandle?.get<String>("payment_service_type") ?: "Boarding"
+                val pets = savedStateHandle?.get<List<Pet>>("payment_pets") ?: emptyList()
                 val petNames = savedStateHandle?.get<String>("payment_pet_names") ?: ""
                 val startTime = savedStateHandle?.get<String>("payment_start_time") ?: ""
                 val startDate = savedStateHandle?.get<String>("payment_start_date") ?: ""
@@ -364,9 +364,11 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 val endDate = savedStateHandle?.get<String>("payment_end_date") ?: ""
                 val tier = savedStateHandle?.get<String>("payment_tier") ?: ""
                 val branch = savedStateHandle?.get<String>("payment_branch") ?: ""
+                val notes = savedStateHandle?.get<String>("payment_notes") ?: ""
                 val duration = savedStateHandle?.get<Int>("payment_duration") ?: 0
                 val tierPrice = savedStateHandle?.get<Double>("payment_tier_price") ?: 0.0
                 val totalPrice = savedStateHandle?.get<Double>("payment_total_price") ?: 0.0
+                val paymentMethod = backStackEntry.savedStateHandle.getStateFlow<String?>("selected_payment_method", null).collectAsState().value
 
                 PaymentScreen(
                     serviceType = serviceType,
@@ -380,10 +382,59 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                     durationHours = duration,
                     tierPrice = tierPrice,
                     totalPrice = totalPrice,
+                    selectedPaymentMethod = paymentMethod,
                     onNavigateBack = { navController.popBackStack() },
-                    onConfirmPayment = {
-                        // TODO: Implement payment confirmation logic
-                        navController.popBackStack(Screen.Home.route, inclusive = false)
+                    onNavigateToPaymentMethod = {
+                        navController.navigate(Screen.PaymentMethodSelection.route)
+                    },
+                    onConfirmPayment = { viewModel ->
+                        // Create order with all the data
+                        viewModel.createOrderFromPayment(
+                            pets = pets,
+                            serviceType = serviceType,
+                            startTime = startTime,
+                            startDate = startDate,
+                            endTime = endTime,
+                            endDate = endDate,
+                            tier = tier,
+                            branch = branch,
+                            notes = notes,
+                            totalPrice = totalPrice,
+                            onSuccess = {
+                                navController.popBackStack(Screen.Home.route, inclusive = false)
+                            },
+                            onError = { error ->
+                                // Show error (can be handled with a snackbar or toast)
+                                android.util.Log.e("PaymentScreen", "Error creating order: $error")
+                            }
+                        )
+                    }
+                )
+            }
+
+            // Payment Method Selection Screen
+            composable(
+                route = Screen.PaymentMethodSelection.route,
+                enterTransition = {
+                    slideInVertically(
+                        initialOffsetY = { fullHeight -> fullHeight },
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                },
+                exitTransition = {
+                    slideOutVertically(
+                        targetOffsetY = { fullHeight -> fullHeight },
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                }
+            ) {
+                PaymentMethodSelectionScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onPaymentMethodSelected = { method ->
+                        navController.previousBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("selected_payment_method", method.name)
+                        navController.popBackStack()
                     }
                 )
             }

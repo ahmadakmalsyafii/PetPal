@@ -180,13 +180,22 @@ class OrderRepository {
         }
     }
 
-    // Create new order
-    suspend fun createOrder(order: Order): Result<String> {
+    suspend fun createOrderSuspend(order: Order): Result<String> {
         return try {
-            val docRef = orderCollection.document()
-            val orderWithId = order.copy(id = docRef.id)
-            docRef.set(orderWithId).await()
-            Result.success(docRef.id)
+            val userId = auth.currentUser?.uid
+            if (userId == null) {
+                return Result.failure(Exception("User not logged in"))
+            }
+
+            val doc = orderCollection.document() // auto generate ID
+            val finalOrder = order.copy(
+                id = doc.id,
+                owner_id = userId,
+                status = "Accepted" // Set initial status
+            )
+
+            doc.set(finalOrder).await()
+            Result.success(doc.id)
         } catch (e: Exception) {
             Result.failure(e)
         }

@@ -58,7 +58,7 @@ fun OrderFormScreen(
     onNavigateToPetSelection: (String, String, String, String) -> Unit = { _, _, _, _ -> },
     onNavigateToTierSelection: (String, String, String, String) -> Unit = { _, _, _, _ -> },
     onNavigateToBranchSelection: (String, String, String, String) -> Unit = { _, _, _, _ -> },
-    onSubmitOrder: (String, String, String, String, String, String, String, String, Int, Double, Double) -> Unit = { _, _, _, _, _, _, _, _, _, _, _ -> }
+    onSubmitOrder: (List<Pet>, String, String, String, String, String, String, String, String, Int, Double, Double) -> Unit = { _, _, _, _, _, _, _, _, _, _, _, _ -> }
 ) {
     val context = LocalContext.current
 
@@ -67,6 +67,7 @@ fun OrderFormScreen(
     val currentDateString = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(currentCalendar.time)
 
     // Form state
+    var selectedPets by remember { mutableStateOf<List<Pet>>(selectedPetsFromNav ?: emptyList()) }
     var selectedPetNames by remember {
         mutableStateOf<String?>(
             selectedPetsFromNav?.joinToString { pet: Pet -> pet.name }
@@ -80,6 +81,22 @@ fun OrderFormScreen(
     var selectedBranch by remember { mutableStateOf<String?>(selectedBranchFromNav) }
     var note by remember { mutableStateOf("") }
     var isPriceExpanded by remember { mutableStateOf(false) }
+
+    // Update selectedPets when selectedPetsFromNav changes
+    LaunchedEffect(selectedPetsFromNav) {
+        selectedPetsFromNav?.let {
+            selectedPets = it
+            selectedPetNames = it.joinToString { pet -> pet.name }
+        }
+    }
+
+    // Update selectedPets when selectedPetsFromNav changes
+    LaunchedEffect(selectedPetsFromNav) {
+        selectedPetsFromNav?.let {
+            selectedPets = it
+            selectedPetNames = it.joinToString { pet -> pet.name }
+        }
+    }
 
     // Dialog states
     var showStartDatePicker by remember { mutableStateOf(false) }
@@ -450,6 +467,7 @@ fun OrderFormScreen(
                     .clickable(enabled = isFormComplete) {
                         if (isFormComplete) {
                             onSubmitOrder(
+                                selectedPets,
                                 selectedPetNames ?: "",
                                 startTime,
                                 startDate,

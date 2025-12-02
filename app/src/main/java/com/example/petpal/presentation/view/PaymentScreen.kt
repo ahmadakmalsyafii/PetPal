@@ -28,6 +28,8 @@ import com.example.petpal.presentation.theme.BlackText
 import com.example.petpal.presentation.theme.GrayText
 import com.example.petpal.presentation.theme.PetPalDarkGreen
 import com.example.petpal.presentation.theme.White
+import com.example.petpal.presentation.viewmodel.OrderViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -45,9 +47,12 @@ fun PaymentScreen(
     durationHours: Int,
     tierPrice: Double,
     totalPrice: Double,
+    selectedPaymentMethod: String? = null,
     onNavigateBack: () -> Unit,
-    onConfirmPayment: () -> Unit
+    onNavigateToPaymentMethod: () -> Unit,
+    onConfirmPayment: (com.example.petpal.presentation.viewmodel.OrderViewModel) -> Unit
 ) {
+    val orderViewModel: OrderViewModel = viewModel()
     var isPriceExpanded by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
     val iconRotation by animateFloatAsState(
@@ -125,7 +130,10 @@ fun PaymentScreen(
                 modifier = Modifier.padding(bottom = 12.dp, top = 24.dp)
             )
 
-            PaymentMethodSelector()
+            PaymentMethodSelector(
+                selectedMethod = selectedPaymentMethod,
+                onClick = onNavigateToPaymentMethod
+            )
 
             // Price Detail Section (Expandable)
             Text(
@@ -215,10 +223,14 @@ fun PaymentScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        color = PetPalDarkGreen,
+                        color = if (selectedPaymentMethod != null) PetPalDarkGreen else GrayText.copy(alpha = 0.5f),
                         shape = RoundedCornerShape(32.dp)
                     )
-                    .clickable { onConfirmPayment() }
+                    .clickable(enabled = selectedPaymentMethod != null) {
+                        if (selectedPaymentMethod != null) {
+                            onConfirmPayment(orderViewModel)
+                        }
+                    }
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
@@ -232,7 +244,7 @@ fun PaymentScreen(
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Text(
-                    text = "Lanjut Pembayaran",
+                    text = "Buat Pesanan",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = White
@@ -390,11 +402,14 @@ private fun OrderDetailRow(
 }
 
 @Composable
-private fun PaymentMethodSelector() {
+private fun PaymentMethodSelector(
+    selectedMethod: String?,
+    onClick: () -> Unit
+) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { /* Navigate to payment method selection */ },
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         color = PetPalDarkGreen
     ) {
@@ -421,7 +436,7 @@ private fun PaymentMethodSelector() {
             Spacer(modifier = Modifier.width(12.dp))
 
             Text(
-                text = "Pilih Metode Pembayaran",
+                text = selectedMethod ?: "Pilih Metode Pembayaran",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = White,
@@ -470,4 +485,3 @@ private fun formatPrice(price: Double): String {
     val formatter = NumberFormat.getInstance(Locale.forLanguageTag("id-ID"))
     return formatter.format(price.toLong())
 }
-

@@ -15,8 +15,15 @@ class OrderViewModel : ViewModel() {
     private val _uiState = MutableStateFlow<UiState<Order?>>(UiState.Loading)
     val uiState: StateFlow<UiState<Order?>> = _uiState
 
+    private val _createOrderState = MutableStateFlow<UiState<String>?>(null)
+    val createOrderState: StateFlow<UiState<String>?> = _createOrderState
+
+    private val _activeOrders = MutableStateFlow<UiState<List<Order>>>(UiState.Loading)
+    val activeOrders: StateFlow<UiState<List<Order>>> = _activeOrders
+
     init {
         loadActiveOrder()
+        loadActiveOrders()
     }
 
     fun loadActiveOrder() {
@@ -31,16 +38,91 @@ class OrderViewModel : ViewModel() {
         }
     }
 
+    fun loadActiveOrders() {
+        repository.getRecentOrder { state ->
+            _activeOrders.value = state
+        }
+    }
+
     fun createOrder(order: Order, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
-            val result = repository.createOrder(order)
+            _createOrderState.value = UiState.Loading
+            val result = repository.createOrderSuspend(order)
             result.fold(
-                onSuccess = {
+                onSuccess = { orderId ->
+                    _createOrderState.value = UiState.Success(orderId)
                     loadActiveOrder()
+                    loadActiveOrders()
                     onSuccess()
                 },
-                onFailure = { onError(it.message ?: "Gagal membuat pesanan") }
+                onFailure = { error ->
+                    _createOrderState.value = UiState.Error(error.message ?: "Gagal membuat pesanan")
+                    onError(error.message ?: "Gagal membuat pesanan")
+                }
             )
+        }
+    }
+
+    fun resetCreateOrderState() {
+        _createOrderState.value = null
+    }
+
+    fun createOrderFromPayment(
+        pets: List<com.example.petpal.data.model.Pet>,
+        serviceType: String,
+        startTime: String,
+        startDate: String,
+        endTime: String,
+        endDate: String,
+        tier: String,
+        branch: String,
+        notes: String,
+        totalPrice: Double,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            _createOrderState.value = UiState.Loading
+
+            try {
+                // Convert dates and times to Timestamp
+                val dateTimeFormat = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault())
+                val startTimestamp = com.google.firebase.Timestamp(dateTimeFormat.parse("$startDate $startTime")!!)
+                val endTimestamp = com.google.firebase.Timestamp(dateTimeFormat.parse("$endDate $endTime")!!)
+
+                // Get first pet ID (for single pet orders) or comma-separated IDs (for multiple pets)
+                val petId = pets.joinToString(",") { it.id }
+
+                val order = Order(
+                    pet_id = petId,
+                    branch = branch,
+                    service = serviceType,
+                    start_time = startTimestamp,
+                    end_time = endTimestamp,
+                    notes = notes,
+                    status = "Accepted",
+                    price = totalPrice,
+                    tier = tier,
+                    owner_id = "" // Will be set by repository
+                )
+
+                val result = repository.createOrderSuspend(order)
+                result.fold(
+                    onSuccess = { orderId ->
+                        _createOrderState.value = UiState.Success(orderId)
+                        loadActiveOrder()
+                        loadActiveOrders()
+                        onSuccess()
+                    },
+                    onFailure = { error ->
+                        _createOrderState.value = UiState.Error(error.message ?: "Gagal membuat pesanan")
+                        onError(error.message ?: "Gagal membuat pesanan")
+                    }
+                )
+            } catch (e: Exception) {
+                _createOrderState.value = UiState.Error(e.message ?: "Gagal membuat pesanan")
+                onError(e.message ?: "Gagal membuat pesanan")
+            }
         }
     }
 }
