@@ -16,6 +16,7 @@ import com.example.petpal.presentation.component.PetPalBottomBar
 import com.example.petpal.presentation.view.AddPetScreen
 import com.example.petpal.presentation.view.ChangePasswordScreen
 import com.example.petpal.presentation.view.EditProfileScreen
+import com.example.petpal.presentation.view.HistoryScreen
 import com.example.petpal.presentation.view.HomeScreen
 import com.example.petpal.presentation.view.LoginScreen
 import com.example.petpal.presentation.view.OnBoardingScreen
@@ -100,8 +101,9 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 Text("Halaman Pesanan")
             }
             composable(Screen.Riwayat.route) {
-                // Placeholder Halaman Riwayat
-                Text("Halaman Riwayat")
+                HistoryScreen(
+                    onNavigateToHistory = { navController.navigate(Screen.Riwayat.route)},
+                )
             }
             composable(Screen.Profile.route) {
                 ProfileScreen(

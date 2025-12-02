@@ -32,7 +32,7 @@ fun OrderHome(
             .padding(16.dp)
     ) {
         Text(
-            text = "Pesanan Terbaru",
+            text = "Recent Orders",
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             color = BlackText,

@@ -28,6 +28,7 @@ import com.example.petpal.utils.UiState
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshState
 
+
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
@@ -63,7 +64,6 @@ fun HomeScreen(
                         .padding(16.dp)
                 )
             }
-
             // ============================
             // CAROUSEL
             // ============================
@@ -89,7 +89,6 @@ fun HomeScreen(
                     else -> {}
                 }
             }
-
             // ============================
             // PET TILES
             // ============================

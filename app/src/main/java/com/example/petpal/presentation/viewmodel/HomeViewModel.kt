@@ -76,11 +76,12 @@ class HomeViewModel : ViewModel() {
     private fun fetchRecentOrders() {
         _orderState.value = UiState.Loading
 
-        orderRepository.getOrdersByUser { state ->
+        orderRepository.getRecentOrder {
+            state ->
             when (state) {
                 is UiState.Success -> {
                     _orderState.value = UiState.Success(
-                        state.data.take(3)
+                        state.data.take(2)
                     )
                 }
 

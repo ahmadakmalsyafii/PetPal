@@ -14,6 +14,62 @@ class OrderRepository {
     // -----------------------------
     // GET ALL ORDERS FOR LOGGED USER
     // -----------------------------
+    fun getRecentOrder(
+        result: (UiState<List<Order>>) -> Unit
+    ){
+        val userId = auth.currentUser?.uid
+        if (userId == null) {
+            result(UiState.Error("User not logged in"))
+            return
+        }
+
+        result(UiState.Loading)
+
+        orderCollection
+            .whereEqualTo("owner_id", userId)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val list = snapshot.documents.mapNotNull { doc ->
+                    doc.toObject(Order::class.java)?.copy(id = doc.id)
+                }
+                    .filter { order ->
+                        order.status != "completed"
+                    }
+                result(UiState.Success(list))
+            }
+            .addOnFailureListener { error ->
+                result(UiState.Error(error.message ?: "Failed to load orders"))
+            }
+    }
+
+    fun getHistory(
+        result: (UiState<List<Order>>) -> Unit
+    ) {
+        val userId = auth.currentUser?.uid
+        if (userId == null) {
+            result(UiState.Error("User not logged in"))
+            return
+        }
+
+        result(UiState.Loading)
+
+        orderCollection
+            .whereEqualTo("owner_id", userId)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val list = snapshot.documents.mapNotNull { doc ->
+                    doc.toObject(Order::class.java)?.copy(id = doc.id)
+                }
+                    .filter { order ->
+                        order.status == "completed"
+                    }
+                result(UiState.Success(list))
+            }
+            .addOnFailureListener { error ->
+                result(UiState.Error(error.message ?: "Failed to load orders"))
+            }
+    }
+
     fun getOrdersByUser(
         result: (UiState<List<Order>>) -> Unit
     ) {

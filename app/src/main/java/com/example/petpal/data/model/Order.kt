@@ -12,4 +12,7 @@ data class Order(
     val notes: String = "",
     val status: String = "",
     val price: Double = 0.0,
+    val tier: String = "",
+    val owner_id: String = ""
 )
+
