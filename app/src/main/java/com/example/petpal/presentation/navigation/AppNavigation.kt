@@ -2,8 +2,8 @@ package com.example.petpal.presentation.navigation
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -30,6 +30,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
     // Cek apakah user sudah login
 //    val startDestination = if (authRepository.currentUser != null) Screen.Home.route else Screen.OnBoarding.route
     val startDestination = Screen.Login.route
+//    val startDestination = Screen.Home.route
 
     Scaffold (
         bottomBar = { PetPalBottomBar(navController) }

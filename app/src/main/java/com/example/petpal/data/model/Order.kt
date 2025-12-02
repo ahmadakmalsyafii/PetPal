@@ -11,5 +11,5 @@ data class Order(
     val end_time: Timestamp? = null,
     val notes: String = "",
     val status: String = "",
-    val total_price: Double = 0.0,
+    val price: Double = 0.0,
 )
