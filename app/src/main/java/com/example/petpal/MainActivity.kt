@@ -9,10 +9,14 @@ import androidx.compose.material3.Surface
 import androidx.navigation.compose.rememberNavController
 import com.example.petpal.presentation.navigation.AppNavigation
 import com.example.petpal.presentation.theme.PetPalTheme
+import com.example.petpal.utils.CloudinaryHelper
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        CloudinaryHelper.init(this)
+
         enableEdgeToEdge()
         setContent {
             PetPalTheme {

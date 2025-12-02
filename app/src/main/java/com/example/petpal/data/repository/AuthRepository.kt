@@ -110,11 +110,12 @@ class AuthRepository {
     }
 
     // Update Profil
-    suspend fun updateUserProfile(uid: String, name: String, phone: String, location: String) {
+    suspend fun updateUserProfile(uid: String, name: String, phone: String, location: String, photoUrl: String) {
         val updates = mapOf(
             "name" to name,
             "phoneNumber" to phone,
-            "location" to location
+            "location" to location,
+            "photoUrl" to photoUrl
         )
         usersCollection.document(uid).update(updates).await()
     }

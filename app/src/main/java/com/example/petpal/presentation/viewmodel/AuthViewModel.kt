@@ -1,9 +1,11 @@
 package com.example.petpal.presentation.viewmodel
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petpal.data.model.User
 import com.example.petpal.data.repository.AuthRepository
+import com.example.petpal.utils.CloudinaryHelper
 import com.example.petpal.utils.UiState
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
@@ -85,14 +87,31 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    fun updateProfile(name: String, phone: String, location: String) {
+    fun updateProfile(
+        name: String,
+        phone: String,
+        location: String,
+        newImageUri: Uri?,
+        currentPhotoUrl: String
+    ) {
         val uid = repository.currentUser?.uid ?: return
         viewModelScope.launch {
             _updateState.value = UiState.Loading
             try {
-                repository.updateUserProfile(uid, name, phone, location)
+                // Logika Upload
+                val finalPhotoUrl = if (newImageUri != null) {
+                    // Upload ke Cloudinary jika ada gambar baru dipilih
+                    CloudinaryHelper.uploadImage(newImageUri)
+                } else {
+                    // Gunakan foto lama jika tidak ada gambar baru
+                    currentPhotoUrl
+                }
+
+                // Update ke Firestore
+                repository.updateUserProfile(uid, name, phone, location, finalPhotoUrl)
+
                 _updateState.value = UiState.Success(true)
-                loadCurrentUser() // Refresh data
+                loadCurrentUser() // Refresh data user di aplikasi
             } catch (e: Exception) {
                 _updateState.value = UiState.Error(e.message ?: "Gagal update profil")
             }

@@ -1,6 +1,10 @@
 package com.example.petpal.presentation.view
 
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -47,7 +51,18 @@ fun EditProfileScreen(
     var phone by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
 
-    // Init Data
+    // State Foto
+    var currentPhotoUrl by remember { mutableStateOf("") } // Foto dari Firestore
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) } // Foto baru dari Galeri
+
+    // Setup Image Picker (Hanya Gambar)
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        selectedImageUri = uri
+    }
+
+    // Init Data saat masuk layar
     LaunchedEffect(userState) {
         if (userState is UiState.Success) {
             val user = (userState as UiState.Success).data ?: User()
@@ -55,10 +70,11 @@ fun EditProfileScreen(
             email = user.email
             phone = user.phoneNumber
             location = user.location
+            currentPhotoUrl = user.photoUrl
         }
     }
 
-    // Handle Update Result
+    // Handle Update Success
     LaunchedEffect(updateState) {
         if (updateState is UiState.Success && (updateState as UiState.Success).data) {
             Toast.makeText(context, "Profil Berhasil Diupdate", Toast.LENGTH_SHORT).show()
@@ -98,10 +114,16 @@ fun EditProfileScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Foto Profil (Placeholder)
+        // Logika Menampilkan Foto: Prioritaskan Foto Baru (Uri), kalau null pakai Foto Lama (Url)
+        val imageModel = if (selectedImageUri != null) {
+            selectedImageUri
+        } else {
+            currentPhotoUrl.ifEmpty { "https://ui-avatars.com/api/?name=$name" }
+        }
+
         Box(contentAlignment = Alignment.BottomCenter) {
             AsyncImage(
-                model = "https://ui-avatars.com/api/?name=$name",
+                model = imageModel,
                 contentDescription = null,
                 modifier = Modifier
                     .size(100.dp)
@@ -111,14 +133,21 @@ fun EditProfileScreen(
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
+
+        // Tombol Ganti Foto
         Button(
-            onClick = { /* Pick Image Logic */ },
+            onClick = {
+                // Buka Galeri
+                photoPickerLauncher.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
+            },
             colors = ButtonDefaults.buttonColors(containerColor = PetPalDarkGreen),
             shape = RoundedCornerShape(20.dp),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
             modifier = Modifier.height(36.dp)
         ) {
-            Text("Tambah Foto", fontSize = 12.sp)
+            Text("Ganti Foto", fontSize = 12.sp)
         }
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -140,10 +169,14 @@ fun EditProfileScreen(
 
         if (updateState is UiState.Loading) {
             CircularProgressIndicator(color = PetPalDarkGreen)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Mengupload...", fontSize = 12.sp, color = Color.Gray)
         } else {
             PetPalPrimaryButton(
                 text = "Simpan",
-                onClick = { viewModel.updateProfile(name, phone, location) }
+                onClick = {
+                    viewModel.updateProfile(name, phone, location, selectedImageUri, currentPhotoUrl)
+                }
             )
         }
 

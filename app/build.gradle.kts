@@ -91,4 +91,7 @@ dependencies {
     implementation ("androidx.compose.material:material:1.9.5")
 
 
+    implementation("com.cloudinary:cloudinary-android:2.5.0")
+
+
 }
