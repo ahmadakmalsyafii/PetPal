@@ -99,7 +99,7 @@ fun PemesananScreen(
                             ) {
                                 PetPalPrimaryButtonWithIcon(
                                     text = "Sewa Jasa Sitter",
-                                    iconRes = R.drawable.logo_petpal,
+                                    iconRes = R.drawable.logo_petpal_white,
                                     onClick = { showServiceSelection = true },
                                     modifier = Modifier.fillMaxWidth()
                                 )

@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.widget.Toast
 import com.example.petpal.R
+import com.example.petpal.data.model.Pet
 import com.example.petpal.presentation.component.DurationField
 import com.example.petpal.presentation.component.OrderFormField
 import com.example.petpal.presentation.theme.BlackText
@@ -47,8 +48,11 @@ import java.util.Locale
 @Composable
 fun OrderFormScreen(
     serviceType: String,
+    selectedTierFromNav: String? = null,
+    selectedPetsFromNav: List<Pet>? = null,
     onNavigateBack: () -> Unit,
-    onSelectPet: () -> Unit = {},
+    onNavigateToPetSelection: () -> Unit = {},
+    onNavigateToTierSelection: () -> Unit = {},
     onSelectTier: () -> Unit = {},
     onSelectBranch: () -> Unit = {},
     onSubmitOrder: () -> Unit = {}
@@ -60,12 +64,16 @@ fun OrderFormScreen(
     val currentDateString = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(currentCalendar.time)
 
     // Form state
-    var selectedPet by remember { mutableStateOf<String?>(null) }
+    var selectedPetNames by remember {
+        mutableStateOf<String?>(
+            selectedPetsFromNav?.joinToString { pet: Pet -> pet.name }
+        )
+    }
     var startTime by remember { mutableStateOf("00:00") }
     var startDate by remember { mutableStateOf(if (serviceType == "Daycare") currentDateString else "00/00/0000") }
     var endTime by remember { mutableStateOf("00:00") }
     var endDate by remember { mutableStateOf(if (serviceType == "Daycare") currentDateString else "00/00/0000") }
-    var selectedTier by remember { mutableStateOf<String?>(null) }
+    var selectedTier by remember { mutableStateOf<String?>(selectedTierFromNav) }
     var selectedBranch by remember { mutableStateOf<String?>(null) }
     var note by remember { mutableStateOf("") }
     var isPriceExpanded by remember { mutableStateOf(false) }
@@ -89,7 +97,7 @@ fun OrderFormScreen(
     val totalPrice = durationHours * tierPrice
 
     // Check if form is complete
-    val isFormComplete = selectedPet != null &&
+    val isFormComplete = selectedPetNames != null &&
                          startTime != "00:00" &&
                          endTime != "00:00" &&
                          selectedTier != null &&
@@ -97,7 +105,7 @@ fun OrderFormScreen(
 
     val scrollState = rememberScrollState()
     val iconRotation by animateFloatAsState(
-        targetValue = if (isPriceExpanded) 180f else 0f,
+        targetValue = if (isPriceExpanded) 0f else 180f,
         animationSpec = tween(durationMillis = 300),
         label = "icon rotation"
     )
@@ -145,9 +153,9 @@ fun OrderFormScreen(
             OrderFormField(
                 iconRes = R.drawable.icon_petoption_foreground,
                 label = "Hewan Peliharaan",
-                value = selectedPet ?: "Pilih hewan peliharaanmu",
-                onClick = onSelectPet,
-                isPlaceholder = selectedPet == null,
+                value = selectedPetNames ?: "Pilih hewan peliharaanmu",
+                onClick = onNavigateToPetSelection,
+                isPlaceholder = selectedPetNames == null,
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
@@ -195,7 +203,7 @@ fun OrderFormScreen(
                 iconRes = R.drawable.icon_tier_foreground,
                 label = "Tingkat Layanan",
                 value = selectedTier ?: "Tingkat Layanan",
-                onClick = onSelectTier,
+                onClick = onNavigateToTierSelection,
                 isPlaceholder = selectedTier == null,
                 modifier = Modifier.padding(bottom = 24.dp)
             )

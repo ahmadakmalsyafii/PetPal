@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -14,6 +15,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.petpal.data.model.Pet
 import com.example.petpal.data.repository.AuthRepository
 import com.example.petpal.presentation.component.PetPalBottomBar
 import com.example.petpal.presentation.view.AddPetScreen
@@ -26,8 +28,10 @@ import com.example.petpal.presentation.view.OnBoardingScreen
 import com.example.petpal.presentation.view.OrderFormScreen
 import com.example.petpal.presentation.view.PemesananScreen
 import com.example.petpal.presentation.view.PetListScreen
+import com.example.petpal.presentation.view.PetSelectionScreen
 import com.example.petpal.presentation.view.ProfileScreen
 import com.example.petpal.presentation.view.RegisterScreen
+import com.example.petpal.presentation.view.TierSelectionScreen
 
 @Composable
 fun AppNavigation(navController: NavHostController = rememberNavController()) {
@@ -173,11 +177,81 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 }
             ) { backStackEntry ->
                 val serviceType = backStackEntry.arguments?.getString("serviceType") ?: "Boarding"
+                val savedStateHandle = backStackEntry.savedStateHandle
+                val selectedTier = savedStateHandle.getStateFlow<String?>("selected_tier", null).collectAsState().value
+                val selectedPets = savedStateHandle.get<List<Pet>>("selected_pets")
+
                 OrderFormScreen(
                     serviceType = serviceType,
+                    selectedTierFromNav = selectedTier,
+                    selectedPetsFromNav = selectedPets,
                     onNavigateBack = { navController.popBackStack() },
+                    onNavigateToPetSelection = {
+                        navController.navigate(Screen.PetSelection.route)
+                    },
+                    onNavigateToTierSelection = {
+                        navController.navigate(Screen.TierSelection.route)
+                    },
                     onSubmitOrder = {
-                        // TODO: Navigate to payment or confirmation screen
+                        navController.popBackStack()
+                    }
+                )
+            }
+
+            // Pet Selection
+            composable(
+                route = Screen.PetSelection.route,
+                enterTransition = {
+                    slideInVertically(
+                        initialOffsetY = { fullHeight -> fullHeight },
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                },
+                exitTransition = {
+                    slideOutVertically(
+                        targetOffsetY = { fullHeight -> fullHeight },
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                }
+            ) { backStackEntry ->
+                val previousEntry = navController.previousBackStackEntry
+                val initiallySelected = previousEntry?.savedStateHandle?.get<List<Pet>>("selected_pets").orEmpty()
+
+                PetSelectionScreen(
+                    initialSelectedPets = initiallySelected,
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToAddPet = {
+                        navController.navigate(Screen.AddPet.route)
+                    },
+                    onPetsSelected = { pets ->
+                        previousEntry?.savedStateHandle?.set("selected_pets", pets)
+                        navController.popBackStack()
+                    }
+                )
+            }
+
+            // Tier Selection
+            composable(
+                route = Screen.TierSelection.route,
+                enterTransition = {
+                    slideInVertically(
+                        initialOffsetY = { fullHeight -> fullHeight },
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                },
+                exitTransition = {
+                    slideOutVertically(
+                        targetOffsetY = { fullHeight -> fullHeight },
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                }
+            ) { backStackEntry ->
+                val previousEntry = navController.previousBackStackEntry
+
+                TierSelectionScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onTierSelected = { tier ->
+                        previousEntry?.savedStateHandle?.set("selected_tier", tier)
                         navController.popBackStack()
                     }
                 )
