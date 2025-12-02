@@ -18,12 +18,13 @@ import androidx.compose.ui.unit.sp
 import com.example.petpal.R
 import com.example.petpal.presentation.theme.BlackText
 import com.example.petpal.presentation.theme.GrayText
+import com.example.petpal.presentation.theme.PetPalDarkGreen
 import com.example.petpal.presentation.theme.White
 
 @Composable
-fun TierSelectionScreen(
+fun BranchSelectionScreen(
     onNavigateBack: () -> Unit,
-    onTierSelected: (String) -> Unit
+    onBranchSelected: (String) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -31,7 +32,7 @@ fun TierSelectionScreen(
             .background(White)
             .windowInsetsPadding(WindowInsets.systemBars)
     ) {
-        // Header aligned with other screens
+        // Header
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -49,7 +50,7 @@ fun TierSelectionScreen(
             }
 
             Text(
-                text = "Pilih Tingkat Layanan",
+                text = "Pilih Cabang",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = BlackText,
@@ -61,40 +62,41 @@ fun TierSelectionScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
+                .padding(top = 16.dp)
         ) {
-            TierCard(
-                iconRes = R.drawable.icon_vvip_foreground,
-                title = "VVIP",
-                description = "Layanan premium, jumlah update foto lebih banyak, kamar/area privat, pejemputan, live cam, makan, grooming.",
-                onClick = { onTierSelected("VVIP") }
+            BranchCard(
+                iconRes = R.drawable.icon_branchoption_foreground,
+                title = "Cabang 1 : PetPal Prime",
+                address = "Taman Borobudur 1 Blok E Nomor 9, Kelapa Dua, Tangerang",
+                onClick = { onBranchSelected("Cabang 1 : PetPal Prime") }
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            TierCard(
-                iconRes = R.drawable.icon_vip_foreground,
-                title = "VIP",
-                description = "Layanan premium, jumlah update foto lebih banyak, kamar/area privat, cam, grooming.",
-                onClick = { onTierSelected("VIP") }
+            BranchCard(
+                iconRes = R.drawable.icon_branchoption_foreground,
+                title = "Cabang 2 : PetPal Next",
+                address = "Jalan Sigura-Gura V Nomor 5, Lowokwaru, Malang",
+                onClick = { onBranchSelected("Cabang 2 : PetPal Next") }
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            TierCard(
-                iconRes = R.drawable.icon_reguler_foreground,
-                title = "Reguler",
-                description = "Layanan dasar dengan fitur standar, live cam, makan.",
-                onClick = { onTierSelected("Regular") }
+            BranchCard(
+                iconRes = R.drawable.icon_branchoption_foreground,
+                title = "Cabang 3 : PetPal Lux",
+                address = "Jalan Camp Nou Nomor 6, Barcelona, Spain",
+                onClick = { onBranchSelected("Cabang 3 : PetPal Lux") }
             )
         }
     }
 }
 
 @Composable
-private fun TierCard(
+private fun BranchCard(
     iconRes: Int,
     title: String,
-    description: String,
+    address: String,
     onClick: () -> Unit
 ) {
     Surface(
@@ -103,31 +105,33 @@ private fun TierCard(
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         color = White,
-        shadowElevation = 0.dp,
-        border = ButtonDefaults.outlinedButtonBorder
+        shadowElevation = 2.dp,
+        tonalElevation = 0.dp
     ) {
         Row(
             modifier = Modifier
                 .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Top
         ) {
             Box(
                 modifier = Modifier
-                    .size(32.dp)
+                    .size(48.dp)
                     .clip(CircleShape)
-                    .background(GrayText.copy(alpha = 0.1f)),
+                    .background(PetPalDarkGreen),
                 contentAlignment = Alignment.Center
             ) {
                 Image(
                     painter = painterResource(id = iconRes),
                     contentDescription = title,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(28.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(16.dp))
 
-            Column {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
                 Text(
                     text = title,
                     fontSize = 16.sp,
@@ -138,9 +142,10 @@ private fun TierCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = description,
+                    text = address,
                     fontSize = 14.sp,
-                    color = GrayText
+                    color = GrayText,
+                    lineHeight = 20.sp
                 )
             }
         }

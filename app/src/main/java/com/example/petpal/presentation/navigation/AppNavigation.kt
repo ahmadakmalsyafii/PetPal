@@ -4,7 +4,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Text
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -15,9 +14,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.petpal.data.model.Pet
 import com.example.petpal.data.repository.AuthRepository
-import com.example.petpal.presentation.component.PetPalBottomBar
+import com.example.petpal.data.model.Pet
 import com.example.petpal.presentation.view.AddPetScreen
 import com.example.petpal.presentation.view.ChangePasswordScreen
 import com.example.petpal.presentation.view.EditProfileScreen
@@ -32,6 +30,8 @@ import com.example.petpal.presentation.view.PetSelectionScreen
 import com.example.petpal.presentation.view.ProfileScreen
 import com.example.petpal.presentation.view.RegisterScreen
 import com.example.petpal.presentation.view.TierSelectionScreen
+import com.example.petpal.presentation.view.BranchSelectionScreen
+import com.example.petpal.presentation.component.PetPalBottomBar
 
 @Composable
 fun AppNavigation(navController: NavHostController = rememberNavController()) {
@@ -180,19 +180,51 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 val savedStateHandle = backStackEntry.savedStateHandle
                 val selectedTier = savedStateHandle.getStateFlow<String?>("selected_tier", null).collectAsState().value
                 val selectedPets = savedStateHandle.get<List<Pet>>("selected_pets")
+                val selectedBranch = savedStateHandle.getStateFlow<String?>("selected_branch", null).collectAsState().value
+                val startTime = savedStateHandle.getStateFlow<String?>("start_time", null).collectAsState().value
+                val startDate = savedStateHandle.getStateFlow<String?>("start_date", null).collectAsState().value
+                val endTime = savedStateHandle.getStateFlow<String?>("end_time", null).collectAsState().value
+                val endDate = savedStateHandle.getStateFlow<String?>("end_date", null).collectAsState().value
 
                 OrderFormScreen(
                     serviceType = serviceType,
+                    onNavigateBack = { navController.popBackStack() },
                     selectedTierFromNav = selectedTier,
                     selectedPetsFromNav = selectedPets,
-                    onNavigateBack = { navController.popBackStack() },
-                    onNavigateToPetSelection = {
+                    selectedBranchFromNav = selectedBranch,
+                    startTimeFromNav = startTime,
+                    startDateFromNav = startDate,
+                    endTimeFromNav = endTime,
+                    endDateFromNav = endDate,
+                    onNavigateToPetSelection = { sTime, sDate, eTime, eDate ->
+                        navController.currentBackStackEntry?.savedStateHandle?.apply {
+                            set("start_time", sTime)
+                            set("start_date", sDate)
+                            set("end_time", eTime)
+                            set("end_date", eDate)
+                        }
                         navController.navigate(Screen.PetSelection.route)
                     },
-                    onNavigateToTierSelection = {
+                    onNavigateToTierSelection = { sTime, sDate, eTime, eDate ->
+                        navController.currentBackStackEntry?.savedStateHandle?.apply {
+                            set("start_time", sTime)
+                            set("start_date", sDate)
+                            set("end_time", eTime)
+                            set("end_date", eDate)
+                        }
                         navController.navigate(Screen.TierSelection.route)
                     },
+                    onNavigateToBranchSelection = { sTime, sDate, eTime, eDate ->
+                        navController.currentBackStackEntry?.savedStateHandle?.apply {
+                            set("start_time", sTime)
+                            set("start_date", sDate)
+                            set("end_time", eTime)
+                            set("end_date", eDate)
+                        }
+                        navController.navigate(Screen.BranchSelection.route)
+                    },
                     onSubmitOrder = {
+                        // TODO: Navigate to payment or confirmation screen
                         navController.popBackStack()
                     }
                 )
@@ -218,15 +250,17 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 val initiallySelected = previousEntry?.savedStateHandle?.get<List<Pet>>("selected_pets").orEmpty()
 
                 PetSelectionScreen(
-                    initialSelectedPets = initiallySelected,
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToAddPet = {
                         navController.navigate(Screen.AddPet.route)
                     },
                     onPetsSelected = { pets ->
-                        previousEntry?.savedStateHandle?.set("selected_pets", pets)
+                        navController.previousBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("selected_pets", pets)
                         navController.popBackStack()
-                    }
+                    },
+                    initialSelectedPets = initiallySelected
                 )
             }
 
@@ -245,13 +279,40 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                         animationSpec = tween(durationMillis = 300)
                     )
                 }
-            ) { backStackEntry ->
-                val previousEntry = navController.previousBackStackEntry
-
+            ) {
                 TierSelectionScreen(
                     onNavigateBack = { navController.popBackStack() },
                     onTierSelected = { tier ->
-                        previousEntry?.savedStateHandle?.set("selected_tier", tier)
+                        navController.previousBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("selected_tier", tier)
+                        navController.popBackStack()
+                    }
+                )
+            }
+
+            // Branch Selection
+            composable(
+                route = Screen.BranchSelection.route,
+                enterTransition = {
+                    slideInVertically(
+                        initialOffsetY = { fullHeight -> fullHeight },
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                },
+                exitTransition = {
+                    slideOutVertically(
+                        targetOffsetY = { fullHeight -> fullHeight },
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                }
+            ) {
+                BranchSelectionScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onBranchSelected = { branch ->
+                        navController.previousBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("selected_branch", branch)
                         navController.popBackStack()
                     }
                 )

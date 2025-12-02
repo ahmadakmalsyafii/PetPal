@@ -46,7 +46,7 @@ fun PemesananScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(top = 8.dp, bottom = 8.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(

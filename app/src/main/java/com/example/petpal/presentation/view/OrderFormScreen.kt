@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.sp
 import android.widget.Toast
 import com.example.petpal.R
 import com.example.petpal.data.model.Pet
-import com.example.petpal.presentation.component.DurationField
 import com.example.petpal.presentation.component.OrderFormField
 import com.example.petpal.presentation.theme.BlackText
 import com.example.petpal.presentation.theme.GrayText
@@ -48,13 +47,17 @@ import java.util.Locale
 @Composable
 fun OrderFormScreen(
     serviceType: String,
+    onNavigateBack: () -> Unit,
     selectedTierFromNav: String? = null,
     selectedPetsFromNav: List<Pet>? = null,
-    onNavigateBack: () -> Unit,
-    onNavigateToPetSelection: () -> Unit = {},
-    onNavigateToTierSelection: () -> Unit = {},
-    onSelectTier: () -> Unit = {},
-    onSelectBranch: () -> Unit = {},
+    selectedBranchFromNav: String? = null,
+    startTimeFromNav: String? = null,
+    startDateFromNav: String? = null,
+    endTimeFromNav: String? = null,
+    endDateFromNav: String? = null,
+    onNavigateToPetSelection: (String, String, String, String) -> Unit = { _, _, _, _ -> },
+    onNavigateToTierSelection: (String, String, String, String) -> Unit = { _, _, _, _ -> },
+    onNavigateToBranchSelection: (String, String, String, String) -> Unit = { _, _, _, _ -> },
     onSubmitOrder: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -69,12 +72,12 @@ fun OrderFormScreen(
             selectedPetsFromNav?.joinToString { pet: Pet -> pet.name }
         )
     }
-    var startTime by remember { mutableStateOf("00:00") }
-    var startDate by remember { mutableStateOf(if (serviceType == "Daycare") currentDateString else "00/00/0000") }
-    var endTime by remember { mutableStateOf("00:00") }
-    var endDate by remember { mutableStateOf(if (serviceType == "Daycare") currentDateString else "00/00/0000") }
+    var startTime by remember { mutableStateOf(startTimeFromNav ?: "00:00") }
+    var startDate by remember { mutableStateOf(startDateFromNav ?: if (serviceType == "Daycare") currentDateString else "00/00/0000") }
+    var endTime by remember { mutableStateOf(endTimeFromNav ?: "00:00") }
+    var endDate by remember { mutableStateOf(endDateFromNav ?: if (serviceType == "Daycare") currentDateString else "00/00/0000") }
     var selectedTier by remember { mutableStateOf<String?>(selectedTierFromNav) }
-    var selectedBranch by remember { mutableStateOf<String?>(null) }
+    var selectedBranch by remember { mutableStateOf<String?>(selectedBranchFromNav) }
     var note by remember { mutableStateOf("") }
     var isPriceExpanded by remember { mutableStateOf(false) }
 
@@ -91,8 +94,41 @@ fun OrderFormScreen(
         "VVIP" to 100000.0
     )
 
-    // Mock duration calculation (will be replaced with actual datetime calculation)
-    val durationHours = 0 // TODO: Calculate from actual start and end times
+    // Calculate duration from start and end times/dates
+    val durationHours = remember(startTime, startDate, endTime, endDate) {
+        try {
+            if (serviceType == "Boarding") {
+                // For Boarding: Calculate days between dates
+                if (startDate != "00/00/0000" && endDate != "00/00/0000") {
+                    val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+                    val startDateTime = dateFormat.parse("$startDate $startTime")
+                    val endDateTime = dateFormat.parse("$endDate $endTime")
+
+                    if (startDateTime != null && endDateTime != null) {
+                        val diffInMillis = endDateTime.time - startDateTime.time
+                        val diffInHours = diffInMillis / (1000 * 60 * 60)
+                        maxOf(diffInHours.toInt(), 0)
+                    } else 0
+                } else 0
+            } else {
+                // For Daycare: Calculate hours between times on the same day
+                if (startTime != "00:00" && endTime != "00:00") {
+                    val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+                    val startTimeParsed = timeFormat.parse(startTime)
+                    val endTimeParsed = timeFormat.parse(endTime)
+
+                    if (startTimeParsed != null && endTimeParsed != null) {
+                        val diffInMillis = endTimeParsed.time - startTimeParsed.time
+                        val diffInHours = diffInMillis / (1000 * 60 * 60)
+                        maxOf(diffInHours.toInt(), 0)
+                    } else 0
+                } else 0
+            }
+        } catch (e: Exception) {
+            0
+        }
+    }
+
     val tierPrice = selectedTier?.let { tierPrices[it] } ?: 0.0
     val totalPrice = durationHours * tierPrice
 
@@ -120,15 +156,15 @@ fun OrderFormScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(top = 8.dp, bottom = 8.dp)
         ) {
             IconButton(
                 onClick = onNavigateBack,
                 modifier = Modifier.align(Alignment.CenterStart)
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.icon_close_foreground),
-                    contentDescription = "Close",
+                    painter = painterResource(id = R.drawable.icon_arrowleft_foreground),
+                    contentDescription = "Back",
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -154,7 +190,7 @@ fun OrderFormScreen(
                 iconRes = R.drawable.icon_petoption_foreground,
                 label = "Hewan Peliharaan",
                 value = selectedPetNames ?: "Pilih hewan peliharaanmu",
-                onClick = onNavigateToPetSelection,
+                onClick = { onNavigateToPetSelection(startTime, startDate, endTime, endDate) },
                 isPlaceholder = selectedPetNames == null,
                 modifier = Modifier.padding(bottom = 24.dp)
             )
@@ -203,7 +239,7 @@ fun OrderFormScreen(
                 iconRes = R.drawable.icon_tier_foreground,
                 label = "Tingkat Layanan",
                 value = selectedTier ?: "Tingkat Layanan",
-                onClick = onNavigateToTierSelection,
+                onClick = { onNavigateToTierSelection(startTime, startDate, endTime, endDate) },
                 isPlaceholder = selectedTier == null,
                 modifier = Modifier.padding(bottom = 24.dp)
             )
@@ -213,7 +249,7 @@ fun OrderFormScreen(
                 iconRes = R.drawable.icon_branch_foreground,
                 label = "Cabang",
                 value = selectedBranch ?: "Cabang",
-                onClick = onSelectBranch,
+                onClick = { onNavigateToBranchSelection(startTime, startDate, endTime, endDate) },
                 isPlaceholder = selectedBranch == null,
                 modifier = Modifier.padding(bottom = 24.dp)
             )
@@ -431,6 +467,50 @@ fun OrderFormScreen(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun DurationField(
+    label: String,
+    time: String,
+    date: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .background(
+                color = GrayText.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(12.dp)
+            )
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.icon_calendar_foreground),
+            contentDescription = "Calendar",
+            modifier = Modifier.size(20.dp)
+        )
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Text(
+            text = label,
+            fontSize = 14.sp,
+            color = BlackText,
+            fontWeight = FontWeight.Medium
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        Text(
+            text = "$time, $date",
+            fontSize = 14.sp,
+            color = if (time == "00:00" && date == "00/00/0000") GrayText else BlackText
+        )
     }
 }
 

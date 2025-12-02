@@ -52,28 +52,28 @@ fun PetSelectionScreen(
             .windowInsetsPadding(WindowInsets.systemBars)
     ) {
         // Header
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(top = 8.dp, bottom = 8.dp)
         ) {
-            IconButton(onClick = onNavigateBack) {
+            IconButton(
+                onClick = onNavigateBack,
+                modifier = Modifier.align(Alignment.CenterStart)
+            ) {
                 Image(
-                    painter = painterResource(id = R.drawable.icon_close_foreground),
-                    contentDescription = "Close",
+                    painter = painterResource(id = R.drawable.icon_arrowleft_foreground),
+                    contentDescription = "Back",
                     modifier = Modifier.size(24.dp)
                 )
             }
 
             Text(
                 text = "Pilih Hewan Peliharaan-mu",
-                fontSize = 18.sp,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = BlackText,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 8.dp)
+                modifier = Modifier.align(Alignment.Center)
             )
         }
 
