@@ -1,16 +1,19 @@
 package com.example.petpal.presentation.navigation
 
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.petpal.data.repository.AuthRepository
 import com.example.petpal.presentation.component.PetPalBottomBar
 import com.example.petpal.presentation.view.AddPetScreen
@@ -19,6 +22,8 @@ import com.example.petpal.presentation.view.EditProfileScreen
 import com.example.petpal.presentation.view.HomeScreen
 import com.example.petpal.presentation.view.LoginScreen
 import com.example.petpal.presentation.view.OnBoardingScreen
+import com.example.petpal.presentation.view.OrderFormScreen
+import com.example.petpal.presentation.view.PemesananScreen
 import com.example.petpal.presentation.view.PetListScreen
 import com.example.petpal.presentation.view.ProfileScreen
 import com.example.petpal.presentation.view.RegisterScreen
@@ -94,10 +99,15 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 )
             }
 
+            // PESANAN
             composable(Screen.Pesanan.route) {
-                // Placeholder Halaman Pesanan
-                Text("Halaman Pesanan")
+                PemesananScreen(
+                    onNavigateToOrderForm = { serviceType ->
+                        navController.navigate(Screen.OrderForm.createRoute(serviceType))
+                    }
+                )
             }
+
             composable(Screen.Riwayat.route) {
                 // Placeholder Halaman Riwayat
                 Text("Halaman Riwayat")
@@ -137,6 +147,36 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             composable(Screen.AddPet.route) {
                 AddPetScreen(
                     onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            // Order Form
+            composable(
+                route = Screen.OrderForm.route,
+                arguments = listOf(
+                    navArgument("serviceType") { type = NavType.StringType }
+                ),
+                enterTransition = {
+                    slideInVertically(
+                        initialOffsetY = { fullHeight -> fullHeight },
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                },
+                exitTransition = {
+                    slideOutVertically(
+                        targetOffsetY = { fullHeight -> fullHeight },
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                }
+            ) { backStackEntry ->
+                val serviceType = backStackEntry.arguments?.getString("serviceType") ?: "Boarding"
+                OrderFormScreen(
+                    serviceType = serviceType,
+                    onNavigateBack = { navController.popBackStack() },
+                    onSubmitOrder = {
+                        // TODO: Navigate to payment or confirmation screen
+                        navController.popBackStack()
+                    }
                 )
             }
         }

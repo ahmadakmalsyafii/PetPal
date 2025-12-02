@@ -18,4 +18,9 @@ sealed class Screen(val route: String) {
 
     object PetList : Screen("pet_list")
     object AddPet : Screen("add_pet")
+
+    // Order Screens
+    object OrderForm : Screen("order_form/{serviceType}") {
+        fun createRoute(serviceType: String) = "order_form/$serviceType"
+    }
 }
