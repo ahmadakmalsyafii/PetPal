@@ -54,6 +54,7 @@ fun PetListScreen(
                         Icon(Icons.Default.Add, contentDescription = "Tambah")
                     }
                 },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
             )
         }
     ) { paddingValues ->

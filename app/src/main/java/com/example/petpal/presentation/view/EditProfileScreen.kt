@@ -1,5 +1,7 @@
 package com.example.petpal.presentation.view
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -29,6 +31,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.petpal.data.model.User
@@ -38,6 +42,8 @@ import com.example.petpal.presentation.theme.PetPalDarkGreen
 import com.example.petpal.presentation.viewmodel.AuthViewModel
 import com.example.petpal.utils.ImageUtils
 import com.example.petpal.utils.UiState
+import java.io.File
+
 
 @Composable
 fun EditProfileScreen(
@@ -58,6 +64,7 @@ fun EditProfileScreen(
     // State Foto
     var currentPhotoUrl by remember { mutableStateOf("") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
 
     // State Dialog Foto
     var showImageSourceDialog by remember { mutableStateOf(false) }
@@ -93,11 +100,32 @@ fun EditProfileScreen(
 
 
     // Launchers Kamera & Galeri
-    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
         if(uri != null) selectedImageUri = uri
     }
-    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-        if (success && tempCameraUri != null) selectedImageUri = tempCameraUri
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && tempCameraUri != null) {
+            selectedImageUri = tempCameraUri
+        }
+    }
+
+    // Launcher Izin Kamera
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // Izin diberikan, langsung buka kamera
+            val uri = ImageUtils.getImageUri(context)
+            tempCameraUri = uri
+            cameraLauncher.launch(uri)
+        } else {
+            Toast.makeText(context, "Izin kamera diperlukan", Toast.LENGTH_SHORT).show()
+        }
     }
 
     // UI Dialog Foto
@@ -165,16 +193,27 @@ fun EditProfileScreen(
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
-
-        Button(
-            onClick = { showImageSourceDialog = true },
-            colors = ButtonDefaults.buttonColors(containerColor = PetPalDarkGreen),
-            shape = RoundedCornerShape(20.dp),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            modifier = Modifier.height(36.dp)
-        ) {
-            Text("Ganti Foto", fontSize = 12.sp)
-        }
+        
+        PetPalPrimaryButton(
+            text = "Ganti Photo",
+            onClick = { // Cek Izin sebelum membuka kamera
+                val permissionCheck = ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.CAMERA
+                )
+                if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+                    val uri = ImageUtils.getImageUri(context)
+                    tempCameraUri = uri
+                    cameraLauncher.launch(uri)
+                } else {
+                    // Minta izin
+                    permissionLauncher.launch(Manifest.permission.CAMERA)
+                }
+            },
+            modifier = Modifier
+                .height(36.dp)
+                .width(160.dp)
+        )
 
         Spacer(modifier = Modifier.height(32.dp))
 

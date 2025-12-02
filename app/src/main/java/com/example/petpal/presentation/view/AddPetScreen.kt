@@ -1,5 +1,7 @@
 package com.example.petpal.presentation.view
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -27,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.petpal.presentation.component.PetPalPrimaryButton
@@ -82,6 +85,19 @@ fun AddPetScreen(
         }
     }
 
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // Izin diberikan, langsung buka kamera
+            val uri = ImageUtils.getImageUri(context)
+            tempCameraUri = uri
+            cameraLauncher.launch(uri)
+        } else {
+            Toast.makeText(context, "Izin kamera diperlukan", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     // Dialog Pilihan Sumber
     if (showImageSourceDialog) {
         AlertDialog(
@@ -134,7 +150,7 @@ fun AddPetScreen(
                 .background(Color.White)
                 .padding(paddingValues)
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState()), // SCROLLABLE FORM
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Foto Picker
@@ -163,14 +179,26 @@ fun AddPetScreen(
             }
             Spacer(modifier = Modifier.height(12.dp))
 
-            Button(
-                onClick = { showImageSourceDialog = true }, // Ubah action
-                colors = ButtonDefaults.buttonColors(containerColor = PetPalDarkGreen),
-                shape = RoundedCornerShape(20.dp),
-                modifier = Modifier.height(36.dp)
-            ) {
-                Text("Tambah Foto", fontSize = 12.sp)
-            }
+            PetPalPrimaryButton(
+                text = "Ganti Photo",
+                onClick = { // Cek Izin sebelum membuka kamera
+                    val permissionCheck = ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.CAMERA
+                    )
+                    if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+                        val uri = ImageUtils.getImageUri(context)
+                        tempCameraUri = uri
+                        cameraLauncher.launch(uri)
+                    } else {
+                        // Minta izin
+                        permissionLauncher.launch(Manifest.permission.CAMERA)
+                    }
+                },
+                modifier = Modifier
+                    .height(36.dp)
+                    .width(160.dp)
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -206,7 +234,7 @@ fun AddPetScreen(
                     text = "Simpan",
                     onClick = {
                         if (name.isNotEmpty() && type.isNotEmpty()) {
-                            viewModel.addPet(name, type, age, notes, gender, imageUri)
+                            viewModel.addPet(name, type, age,gender, notes, imageUri)
                         } else {
                             Toast.makeText(context, "Nama dan Jenis wajib diisi", Toast.LENGTH_SHORT).show()
                         }
