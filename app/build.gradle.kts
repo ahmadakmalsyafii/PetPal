@@ -90,6 +90,7 @@ dependencies {
 
 //    implementation ("androidx.compose.material:material-icons-extended:<version>")
     implementation ("androidx.compose.material:material:1.9.5")
+    implementation("androidx.compose.material3:material3:1.2.0")
 
 
     implementation("com.cloudinary:cloudinary-android:2.5.0")

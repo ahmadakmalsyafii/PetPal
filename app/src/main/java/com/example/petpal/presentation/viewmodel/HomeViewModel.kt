@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petpal.data.model.Order
 import com.example.petpal.data.model.Pet
+import com.example.petpal.data.model.Rating
 import com.example.petpal.data.repository.OrderRepository
 import com.example.petpal.data.repository.PetRepository
+import com.example.petpal.data.repository.RatingRepository
 import com.example.petpal.utils.UiState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,10 +18,17 @@ class HomeViewModel : ViewModel() {
 
     private val petRepository = PetRepository()
     private val orderRepository = OrderRepository()
+    private val ratingRepository = RatingRepository()
+
+
 
     // REFRESH STATE
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing
+
+    //RETINGS STATE
+    private val _ratingsState = MutableStateFlow<UiState<List<Rating>>>(UiState.Loading)
+    val ratingsState: StateFlow<UiState<List<Rating>>> = _ratingsState
 
     // PET STATE
     private val _petsState = MutableStateFlow<UiState<List<Pet>>>(UiState.Loading)
@@ -38,6 +47,7 @@ class HomeViewModel : ViewModel() {
     // ==========================================================
     private fun refreshHomeData() {
         fetchPets()
+        fetchRatings()
         fetchRecentOrders()
     }
 
@@ -69,6 +79,22 @@ class HomeViewModel : ViewModel() {
             }
         }
     }
+
+    fun fetchRatings() {
+        _ratingsState.value = UiState.Loading
+
+        viewModelScope.launch {
+            try {
+                val ratings = ratingRepository.getAllRatings().getOrThrow() // throws exception if failed
+                _ratingsState.value = UiState.Success(ratings)
+            } catch (e: Exception) {
+                _ratingsState.value = UiState.Error(
+                    e.message ?: "Failed to load ratings"
+                )
+            }
+        }
+    }
+
 
     // ==========================================================
     // FETCH RECENT ORDERS (3 latest)

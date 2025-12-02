@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -16,12 +17,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.petpal.data.model.Rating
 import com.example.petpal.presentation.viewmodel.HomeViewModel
 import com.example.petpal.presentation.component.OrderHome
 import com.example.petpal.presentation.component.PetCard
 import com.example.petpal.presentation.component.PetPalCarousel
 import com.example.petpal.presentation.component.PetPalPrimaryButton
 import com.example.petpal.presentation.component.PetTiles
+import com.example.petpal.presentation.component.RatingsCarousel
 import com.example.petpal.presentation.theme.BlackText
 import com.example.petpal.presentation.theme.White
 import com.example.petpal.utils.UiState
@@ -36,6 +39,7 @@ fun HomeScreen(
 ) {
     val petsState by viewModel.petsState.collectAsState()
     val orderState by viewModel.orderState.collectAsState()
+    val ratingsState by viewModel.ratingsState.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
 
     SwipeRefresh(
@@ -83,7 +87,13 @@ fun HomeScreen(
             item {
                 when (val result = orderState) {
                     is UiState.Success -> OrderHome(result.data.take(3))
-                    else -> {}
+                    else -> {
+                        Text(
+                            text = "No recent orders",
+                            color = Color.Gray,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
                 }
             }
             // ============================
@@ -121,9 +131,67 @@ fun HomeScreen(
                 }
             }
 
+            item {
+                when (ratingsState) {
+                    is UiState.Success -> {
+                        val ratings = (ratingsState as UiState.Success<List<Rating>>).data.take(3)
+                        if (ratings.isEmpty()) {
+                            Text(
+                                text = "No ratings yet",
+                                color = Color.Gray,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                            )
+                        } else {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                            ) {
+                                ratings.forEach { rating ->
+                                    RatingsCarousel(
+                                        ratings = ratings,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    is UiState.Loading -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
+
+                    is UiState.Error -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = (ratingsState as UiState.Error).message,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }
+
 
 
 
