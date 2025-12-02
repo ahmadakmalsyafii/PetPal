@@ -52,8 +52,7 @@ fun ChangePasswordScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
-            .padding(16.dp)
-            .windowInsetsPadding(WindowInsets.systemBars),
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(

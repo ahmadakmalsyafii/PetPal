@@ -14,7 +14,7 @@ class PetRepository {
     suspend fun getUserPets(): List<Pet> {
         val uid = auth.currentUser?.uid ?: return emptyList()
         return try {
-            val snapshot = petsCollection.whereEqualTo("owner_id", uid).get().await()
+            val snapshot = petsCollection.whereEqualTo("ownerId", uid).get().await()
             snapshot.toObjects(Pet::class.java)
         } catch (e: Exception) {
             emptyList()

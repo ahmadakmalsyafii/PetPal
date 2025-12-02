@@ -48,10 +48,6 @@ fun HomeScreen(
                 .background(White),
             contentPadding = PaddingValues(bottom = 90.dp)
         ) {
-
-            // ============================
-            // HEADER (fixed section)
-            // ============================
             item {
                 Text(
                     text = "Home Page",

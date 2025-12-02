@@ -165,8 +165,7 @@ fun EditProfileScreen(
             .fillMaxSize()
             .background(Color.White)
             .padding(16.dp)
-            .verticalScroll(rememberScrollState())
-            .windowInsetsPadding(WindowInsets.systemBars),
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Toolbar

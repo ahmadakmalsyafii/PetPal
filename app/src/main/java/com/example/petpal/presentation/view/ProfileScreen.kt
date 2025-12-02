@@ -83,8 +83,7 @@ fun ProfileScreen(
             .fillMaxSize()
             .background(Color(0xFFF5F5F5)) // Background abu-abu muda
             .padding(16.dp)
-            .verticalScroll(rememberScrollState())
-            .windowInsetsPadding(WindowInsets.systemBars),
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Header (Title & Edit Icon)
