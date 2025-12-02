@@ -22,15 +22,22 @@ import com.example.petpal.presentation.view.EditProfileScreen
 import com.example.petpal.presentation.view.HistoryScreen
 import com.example.petpal.presentation.view.HomeScreen
 import com.example.petpal.presentation.view.LoginScreen
+import com.example.petpal.presentation.view.AddPetScreen
+import com.example.petpal.presentation.view.BranchSelectionScreen
+import com.example.petpal.presentation.view.ChangePasswordScreen
+import com.example.petpal.presentation.view.EditProfileScreen
+import com.example.petpal.presentation.view.HistoryScreen
+import com.example.petpal.presentation.view.HomeScreen
+import com.example.petpal.presentation.view.LoginScreen
 import com.example.petpal.presentation.view.OnBoardingScreen
 import com.example.petpal.presentation.view.OrderFormScreen
+import com.example.petpal.presentation.view.PaymentScreen
 import com.example.petpal.presentation.view.PemesananScreen
 import com.example.petpal.presentation.view.PetListScreen
 import com.example.petpal.presentation.view.PetSelectionScreen
 import com.example.petpal.presentation.view.ProfileScreen
 import com.example.petpal.presentation.view.RegisterScreen
 import com.example.petpal.presentation.view.TierSelectionScreen
-import com.example.petpal.presentation.view.BranchSelectionScreen
 import com.example.petpal.presentation.component.PetPalBottomBar
 
 @Composable
@@ -223,9 +230,21 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                         }
                         navController.navigate(Screen.BranchSelection.route)
                     },
-                    onSubmitOrder = {
-                        // TODO: Navigate to payment or confirmation screen
-                        navController.popBackStack()
+                    onSubmitOrder = { petNames, sTime, sDate, eTime, eDate, tier, branch, notes, duration, tPrice, total ->
+                        navController.currentBackStackEntry?.savedStateHandle?.apply {
+                            set("payment_service_type", serviceType)
+                            set("payment_pet_names", petNames)
+                            set("payment_start_time", sTime)
+                            set("payment_start_date", sDate)
+                            set("payment_end_time", eTime)
+                            set("payment_end_date", eDate)
+                            set("payment_tier", tier)
+                            set("payment_branch", branch)
+                            set("payment_duration", duration)
+                            set("payment_tier_price", tPrice)
+                            set("payment_total_price", total)
+                        }
+                        navController.navigate(Screen.Payment.route)
                     }
                 )
             }
@@ -314,6 +333,57 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                             ?.savedStateHandle
                             ?.set("selected_branch", branch)
                         navController.popBackStack()
+                    }
+                )
+            }
+
+            // Payment Screen
+            composable(
+                route = Screen.Payment.route,
+                enterTransition = {
+                    slideInVertically(
+                        initialOffsetY = { fullHeight -> fullHeight },
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                },
+                exitTransition = {
+                    slideOutVertically(
+                        targetOffsetY = { fullHeight -> fullHeight },
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                }
+            ) { backStackEntry ->
+                val previousEntry = navController.previousBackStackEntry
+                val savedStateHandle = previousEntry?.savedStateHandle
+
+                val serviceType = savedStateHandle?.get<String>("payment_service_type") ?: "Boarding"
+                val petNames = savedStateHandle?.get<String>("payment_pet_names") ?: ""
+                val startTime = savedStateHandle?.get<String>("payment_start_time") ?: ""
+                val startDate = savedStateHandle?.get<String>("payment_start_date") ?: ""
+                val endTime = savedStateHandle?.get<String>("payment_end_time") ?: ""
+                val endDate = savedStateHandle?.get<String>("payment_end_date") ?: ""
+                val tier = savedStateHandle?.get<String>("payment_tier") ?: ""
+                val branch = savedStateHandle?.get<String>("payment_branch") ?: ""
+                val duration = savedStateHandle?.get<Int>("payment_duration") ?: 0
+                val tierPrice = savedStateHandle?.get<Double>("payment_tier_price") ?: 0.0
+                val totalPrice = savedStateHandle?.get<Double>("payment_total_price") ?: 0.0
+
+                PaymentScreen(
+                    serviceType = serviceType,
+                    petNames = petNames,
+                    startTime = startTime,
+                    startDate = startDate,
+                    endTime = endTime,
+                    endDate = endDate,
+                    tier = tier,
+                    branch = branch,
+                    durationHours = duration,
+                    tierPrice = tierPrice,
+                    totalPrice = totalPrice,
+                    onNavigateBack = { navController.popBackStack() },
+                    onConfirmPayment = {
+                        // TODO: Implement payment confirmation logic
+                        navController.popBackStack(Screen.Home.route, inclusive = false)
                     }
                 )
             }

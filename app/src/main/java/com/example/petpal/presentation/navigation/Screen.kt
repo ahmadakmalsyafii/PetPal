@@ -26,4 +26,5 @@ sealed class Screen(val route: String) {
     object PetSelection : Screen("pet_selection")
     object TierSelection : Screen("tier_selection")
     object BranchSelection : Screen("branch_selection")
+    object Payment : Screen("payment")
 }

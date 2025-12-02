@@ -58,7 +58,7 @@ fun OrderFormScreen(
     onNavigateToPetSelection: (String, String, String, String) -> Unit = { _, _, _, _ -> },
     onNavigateToTierSelection: (String, String, String, String) -> Unit = { _, _, _, _ -> },
     onNavigateToBranchSelection: (String, String, String, String) -> Unit = { _, _, _, _ -> },
-    onSubmitOrder: () -> Unit = {}
+    onSubmitOrder: (String, String, String, String, String, String, String, String, Int, Double, Double) -> Unit = { _, _, _, _, _, _, _, _, _, _, _ -> }
 ) {
     val context = LocalContext.current
 
@@ -134,10 +134,13 @@ fun OrderFormScreen(
 
     // Check if form is complete
     val isFormComplete = selectedPetNames != null &&
-                         startTime != "00:00" &&
-                         endTime != "00:00" &&
                          selectedTier != null &&
-                         selectedBranch != null
+                         selectedBranch != null &&
+                         (if (serviceType == "Boarding") {
+                             startDate != "00/00/0000" && endDate != "00/00/0000"
+                         } else {
+                             (startTime != "00:00" || endTime != "00:00") && startDate != "00/00/0000"
+                         })
 
     val scrollState = rememberScrollState()
     val iconRotation by animateFloatAsState(
@@ -445,7 +448,21 @@ fun OrderFormScreen(
                         shape = RoundedCornerShape(32.dp)
                     )
                     .clickable(enabled = isFormComplete) {
-                        if (isFormComplete) onSubmitOrder()
+                        if (isFormComplete) {
+                            onSubmitOrder(
+                                selectedPetNames ?: "",
+                                startTime,
+                                startDate,
+                                endTime,
+                                endDate,
+                                selectedTier ?: "",
+                                selectedBranch ?: "",
+                                note,
+                                durationHours,
+                                tierPrice,
+                                totalPrice
+                            )
+                        }
                     }
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.Center,
