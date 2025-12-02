@@ -21,9 +21,9 @@ import com.example.petpal.presentation.component.OrderHome
 import com.example.petpal.presentation.component.PetCard
 import com.example.petpal.presentation.component.PetPalCarousel
 import com.example.petpal.presentation.component.PetPalPrimaryButton
+import com.example.petpal.presentation.component.PetTiles
 import com.example.petpal.presentation.theme.BlackText
 import com.example.petpal.presentation.theme.White
-import com.example.petpal.ui.components.PetTiles
 import com.example.petpal.utils.UiState
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshState
@@ -32,7 +32,7 @@ import com.google.accompanist.swiperefresh.SwipeRefreshState
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
-    onLogout: () -> Unit
+
 ) {
     val petsState by viewModel.petsState.collectAsState()
     val orderState by viewModel.orderState.collectAsState()
@@ -50,9 +50,8 @@ fun HomeScreen(
             contentPadding = PaddingValues(bottom = 90.dp)
         ) {
 
-            // ============================
+
             // HEADER (fixed section)
-            // ============================
             item {
                 Text(
                     text = "Home Page",
@@ -64,9 +63,7 @@ fun HomeScreen(
                         .padding(16.dp)
                 )
             }
-            // ============================
-            // CAROUSEL
-            // ============================
+            //carousel
             item {
                 PetPalCarousel(
                     images = listOf(

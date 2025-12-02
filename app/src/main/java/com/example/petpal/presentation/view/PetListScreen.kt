@@ -32,7 +32,8 @@ import com.example.petpal.utils.UiState
 fun PetListScreen(
     viewModel: PetViewModel = viewModel(),
     onNavigateBack: () -> Unit,
-    onNavigateToAddPet: () -> Unit
+    onNavigateToAddPet: () -> Unit,
+    onNavigateToAllPets: () -> Unit
 ) {
     val petsState by viewModel.petsState.collectAsState()
 

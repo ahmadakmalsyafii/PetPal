@@ -26,7 +26,7 @@ class OrderRepository {
         result(UiState.Loading)
 
         orderCollection
-            .whereEqualTo("owner_id", userId)
+            .whereEqualTo("ownerId", userId)
             .get()
             .addOnSuccessListener { snapshot ->
                 val list = snapshot.documents.mapNotNull { doc ->
@@ -54,7 +54,7 @@ class OrderRepository {
         result(UiState.Loading)
 
         orderCollection
-            .whereEqualTo("owner_id", userId)
+            .whereEqualTo("ownerId", userId)
             .get()
             .addOnSuccessListener { snapshot ->
                 val list = snapshot.documents.mapNotNull { doc ->
@@ -82,7 +82,7 @@ class OrderRepository {
         result(UiState.Loading)
 
         orderCollection
-            .whereEqualTo("owner_id", userId)
+            .whereEqualTo("ownerId", userId)
             .get()
             .addOnSuccessListener { snapshot ->
                 val list = snapshot.documents.mapNotNull { doc ->
