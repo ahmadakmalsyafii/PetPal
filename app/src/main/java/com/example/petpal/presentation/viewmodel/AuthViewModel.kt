@@ -2,6 +2,7 @@ package com.example.petpal.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.petpal.data.model.User
 import com.example.petpal.data.repository.AuthRepository
 import com.example.petpal.utils.UiState
 import com.google.firebase.auth.AuthCredential
@@ -14,6 +15,12 @@ import kotlinx.coroutines.launch
 
 class AuthViewModel : ViewModel() {
     private val repository = AuthRepository()
+
+    private val _userData = MutableStateFlow<UiState<User?>>(UiState.Loading)
+    val userData: StateFlow<UiState<User?>> = _userData
+
+    private val _updateState = MutableStateFlow<UiState<Boolean>>(UiState.Success(false))
+    val updateState: StateFlow<UiState<Boolean>> = _updateState
 
     private val _authState = MutableStateFlow<UiState<FirebaseUser?>>(UiState.Success(repository.currentUser))
     val authState: StateFlow<UiState<FirebaseUser?>> = _authState
@@ -36,6 +43,7 @@ class AuthViewModel : ViewModel() {
             }
         }
     }
+
 
     // Fungsi register tetap sama, atau bisa ditambahkan error handling serupa
     fun register(email: String, pass: String, name: String, phone: String) {
@@ -62,7 +70,55 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    // Reset state agar error tidak muncul terus menerus jika navigasi balik
+    fun loadCurrentUser() {
+        val uid = repository.currentUser?.uid
+        if (uid != null) {
+            viewModelScope.launch {
+                _userData.value = UiState.Loading
+                try {
+                    val user = repository.getUserData(uid)
+                    _userData.value = UiState.Success(user)
+                } catch (e: Exception) {
+                    _userData.value = UiState.Error(e.message ?: "Gagal memuat profil")
+                }
+            }
+        }
+    }
+
+    fun updateProfile(name: String, phone: String, location: String) {
+        val uid = repository.currentUser?.uid ?: return
+        viewModelScope.launch {
+            _updateState.value = UiState.Loading
+            try {
+                repository.updateUserProfile(uid, name, phone, location)
+                _updateState.value = UiState.Success(true)
+                loadCurrentUser() // Refresh data
+            } catch (e: Exception) {
+                _updateState.value = UiState.Error(e.message ?: "Gagal update profil")
+            }
+        }
+    }
+
+    fun changePassword(oldPass: String, newPass: String) {
+        viewModelScope.launch {
+            _updateState.value = UiState.Loading
+            try {
+                repository.changePassword(oldPass, newPass)
+                _updateState.value = UiState.Success(true)
+            } catch (e: Exception) {
+                _updateState.value = UiState.Error(e.message ?: "Gagal ganti password")
+            }
+        }
+    }
+
+    fun resetUpdateState() {
+        _updateState.value = UiState.Success(false)
+    }
+
+    fun logout() {
+        repository.logout()
+    }
+
     fun resetState() {
         _authState.value = UiState.Success(repository.currentUser)
     }

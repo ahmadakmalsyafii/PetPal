@@ -5,6 +5,7 @@ data class User(
     val email: String = "",
     val name: String = "",
     val phoneNumber: String = "",
+    val location: String = "",
     val photoUrl: String = "",
     val userType: UserType = UserType.PET_OWNER,
     val createdAt: Long = System.currentTimeMillis()

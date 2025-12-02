@@ -51,6 +51,7 @@ package com.example.petpal.data.repository
 
 import com.example.petpal.data.model.User
 import com.google.firebase.auth.AuthCredential
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
@@ -97,6 +98,35 @@ class AuthRepository {
         } catch (e: Exception) {
             throw e
         }
+    }
+
+    suspend fun getUserData(uid: String): User? {
+        return try {
+            val snapshot = usersCollection.document(uid).get().await()
+            snapshot.toObject(User::class.java)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    // Update Profil
+    suspend fun updateUserProfile(uid: String, name: String, phone: String, location: String) {
+        val updates = mapOf(
+            "name" to name,
+            "phoneNumber" to phone,
+            "location" to location
+        )
+        usersCollection.document(uid).update(updates).await()
+    }
+
+    // Ganti Password
+    suspend fun changePassword(oldPass: String, newPass: String) {
+        val user = firebaseAuth.currentUser ?: throw Exception("User tidak ditemukan")
+        val credential = EmailAuthProvider.getCredential(user.email!!, oldPass)
+
+        // Re-authenticate user sebelum ganti password (Wajib di Firebase)
+        user.reauthenticate(credential).await()
+        user.updatePassword(newPass).await()
     }
 
     fun logout() {
