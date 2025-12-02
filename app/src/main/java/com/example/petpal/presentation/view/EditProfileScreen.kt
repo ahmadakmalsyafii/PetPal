@@ -15,6 +15,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -34,6 +36,7 @@ import com.example.petpal.presentation.component.PetPalPrimaryButton
 import com.example.petpal.presentation.component.PetPalTextField
 import com.example.petpal.presentation.theme.PetPalDarkGreen
 import com.example.petpal.presentation.viewmodel.AuthViewModel
+import com.example.petpal.utils.ImageUtils
 import com.example.petpal.utils.UiState
 
 @Composable
@@ -46,44 +49,86 @@ fun EditProfileScreen(
     val updateState by viewModel.updateState.collectAsState()
     val context = LocalContext.current
 
+    // State Lokal untuk Form
     var name by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") } // Email read-only usually
+    var email by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
 
     // State Foto
-    var currentPhotoUrl by remember { mutableStateOf("") } // Foto dari Firestore
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) } // Foto baru dari Galeri
+    var currentPhotoUrl by remember { mutableStateOf("") }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
-    // Setup Image Picker (Hanya Gambar)
-    val photoPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia()
-    ) { uri: Uri? ->
-        selectedImageUri = uri
+    // State Dialog Foto
+    var showImageSourceDialog by remember { mutableStateOf(false) }
+    var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
+
+    LaunchedEffect(Unit) {
+        viewModel.loadCurrentUser()
     }
 
-    // Init Data saat masuk layar
+    // 1. PENTING: Mengisi form dengan data dari Database saat pertama kali dibuka
     LaunchedEffect(userState) {
         if (userState is UiState.Success) {
             val user = (userState as UiState.Success).data ?: User()
-            name = user.name
-            email = user.email
-            phone = user.phoneNumber
-            location = user.location
-            currentPhotoUrl = user.photoUrl
+            if (name.isEmpty()) name = user.name
+            if (email.isEmpty()) email = user.email
+            if (phone.isEmpty()) phone = user.phoneNumber
+            if (location.isEmpty()) location = user.location
+            if (currentPhotoUrl.isEmpty()) currentPhotoUrl = user.photoUrl
         }
     }
 
-    // Handle Update Success
+    // Handle Update Result
     LaunchedEffect(updateState) {
         if (updateState is UiState.Success && (updateState as UiState.Success).data) {
             Toast.makeText(context, "Profil Berhasil Diupdate", Toast.LENGTH_SHORT).show()
             viewModel.resetUpdateState()
-            onNavigateBack()
+            onNavigateBack() // Kembali ke halaman profil
         }
         if (updateState is UiState.Error) {
             Toast.makeText(context, (updateState as UiState.Error).message, Toast.LENGTH_SHORT).show()
         }
+    }
+
+
+    // Launchers Kamera & Galeri
+    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if(uri != null) selectedImageUri = uri
+    }
+    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success && tempCameraUri != null) selectedImageUri = tempCameraUri
+    }
+
+    // UI Dialog Foto
+    if (showImageSourceDialog) {
+        AlertDialog(
+            onDismissRequest = { showImageSourceDialog = false },
+            title = { Text("Ganti Foto Profil") },
+            text = {
+                Column {
+                    ListItem(
+                        headlineContent = { Text("Kamera") },
+                        leadingContent = { Icon(Icons.Default.CameraAlt, null) },
+                        modifier = Modifier.clickable {
+                            showImageSourceDialog = false
+                            val uri = ImageUtils.getImageUri(context)
+                            tempCameraUri = uri
+                            cameraLauncher.launch(uri)
+                        }
+                    )
+                    ListItem(
+                        headlineContent = { Text("Galeri") },
+                        leadingContent = { Icon(Icons.Default.PhotoLibrary, null) },
+                        modifier = Modifier.clickable {
+                            showImageSourceDialog = false
+                            galleryLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                        }
+                    )
+                }
+            },
+            confirmButton = {}
+        )
     }
 
     Column(
@@ -91,30 +136,20 @@ fun EditProfileScreen(
             .fillMaxSize()
             .background(Color.White)
             .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .windowInsetsPadding(WindowInsets.systemBars),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Toolbar
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onNavigateBack) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
-            }
-            Text(
-                text = "Edit Profil",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            )
-            Spacer(modifier = Modifier.width(48.dp)) // Balance the icon button
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, "Kembali") }
+            Text("Edit Profil", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+            Spacer(modifier = Modifier.width(48.dp))
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Logika Menampilkan Foto: Prioritaskan Foto Baru (Uri), kalau null pakai Foto Lama (Url)
+        // Foto Profil (Prioritas: Foto Baru > Foto Lama > Avatar Default)
         val imageModel = if (selectedImageUri != null) {
             selectedImageUri
         } else {
@@ -125,23 +160,14 @@ fun EditProfileScreen(
             AsyncImage(
                 model = imageModel,
                 contentDescription = null,
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
-                    .background(Color.LightGray),
+                modifier = Modifier.size(100.dp).clip(CircleShape).background(Color.LightGray),
                 contentScale = ContentScale.Crop
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Tombol Ganti Foto
         Button(
-            onClick = {
-                // Buka Galeri
-                photoPickerLauncher.launch(
-                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                )
-            },
+            onClick = { showImageSourceDialog = true },
             colors = ButtonDefaults.buttonColors(containerColor = PetPalDarkGreen),
             shape = RoundedCornerShape(20.dp),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -152,12 +178,12 @@ fun EditProfileScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Form
+        // Form Input (Terisi otomatis oleh LaunchedEffect di atas)
         PetPalTextField(label = "Nama Lengkap", value = name, onValueChange = { name = it }, placeholder = "")
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Email biasanya tidak bisa diedit dengan mudah di Firebase tanpa re-auth, jadi kita disable atau read-only visual
-        PetPalTextField(label = "Email", value = email, onValueChange = {}, placeholder = "")
+        // Email Read-Only
+        PetPalTextField(label = "Email", value = email, onValueChange = {}, placeholder = "", readOnly = true)
         Spacer(modifier = Modifier.height(16.dp))
 
         PetPalTextField(label = "No. Telepon", value = phone, onValueChange = { phone = it }, placeholder = "", keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone))
@@ -169,14 +195,11 @@ fun EditProfileScreen(
 
         if (updateState is UiState.Loading) {
             CircularProgressIndicator(color = PetPalDarkGreen)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text("Mengupload...", fontSize = 12.sp, color = Color.Gray)
+            Text("Menyimpan...", fontSize = 12.sp, color = Color.Gray)
         } else {
             PetPalPrimaryButton(
                 text = "Simpan",
-                onClick = {
-                    viewModel.updateProfile(name, phone, location, selectedImageUri, currentPhotoUrl)
-                }
+                onClick = { viewModel.updateProfile(name, phone, location, selectedImageUri, currentPhotoUrl) }
             )
         }
 

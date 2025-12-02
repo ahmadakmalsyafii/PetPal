@@ -71,13 +71,5 @@ fun HomeScreen(viewModel: HomeViewModel = viewModel(), onLogout: () -> Unit) {
                 }
             }
         }
-
-        // Tombol Logout di Bawah
-        Box(modifier = Modifier.padding(16.dp)) {
-            PetPalPrimaryButton(
-                text = "Keluar",
-                onClick = onLogout
-            )
-        }
     }
 }

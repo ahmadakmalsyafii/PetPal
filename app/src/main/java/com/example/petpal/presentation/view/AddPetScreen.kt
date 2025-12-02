@@ -6,12 +6,15 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,6 +33,7 @@ import com.example.petpal.presentation.component.PetPalPrimaryButton
 import com.example.petpal.presentation.component.PetPalTextField
 import com.example.petpal.presentation.theme.PetPalDarkGreen
 import com.example.petpal.presentation.viewmodel.PetViewModel
+import com.example.petpal.utils.ImageUtils
 import com.example.petpal.utils.UiState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,10 +53,22 @@ fun AddPetScreen(
     var notes by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
 
-    // Image Picker
-    val pickerLauncher = rememberLauncherForActivityResult(
+    var showImageSourceDialog by remember { mutableStateOf(false) }
+    var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
+
+    // Launcher Galeri
+    val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
-    ) { uri -> imageUri = uri }
+    ) { uri -> if (uri != null) imageUri = uri }
+
+    // Launcher Kamera
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && tempCameraUri != null) {
+            imageUri = tempCameraUri
+        }
+    }
 
     // Handle Success
     LaunchedEffect(addState) {
@@ -64,6 +80,39 @@ fun AddPetScreen(
         if (addState is UiState.Error) {
             Toast.makeText(context, (addState as UiState.Error).message, Toast.LENGTH_SHORT).show()
         }
+    }
+
+    // Dialog Pilihan Sumber
+    if (showImageSourceDialog) {
+        AlertDialog(
+            onDismissRequest = { showImageSourceDialog = false },
+            title = { Text("Ambil Foto Hewan") },
+            text = {
+                Column {
+                    ListItem(
+                        headlineContent = { Text("Ambil Foto") },
+                        leadingContent = { Icon(Icons.Default.CameraAlt, null) },
+                        modifier = Modifier.clickable {
+                            showImageSourceDialog = false
+                            val uri = ImageUtils.getImageUri(context)
+                            tempCameraUri = uri
+                            cameraLauncher.launch(uri)
+                        }
+                    )
+                    ListItem(
+                        headlineContent = { Text("Pilih dari Galeri") },
+                        leadingContent = { Icon(Icons.Default.PhotoLibrary, null) },
+                        modifier = Modifier.clickable {
+                            showImageSourceDialog = false
+                            galleryLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        }
+                    )
+                }
+            },
+            confirmButton = {}
+        )
     }
 
     Scaffold(
@@ -113,8 +162,9 @@ fun AddPetScreen(
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
+
             Button(
-                onClick = { pickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                onClick = { showImageSourceDialog = true }, // Ubah action
                 colors = ButtonDefaults.buttonColors(containerColor = PetPalDarkGreen),
                 shape = RoundedCornerShape(20.dp),
                 modifier = Modifier.height(36.dp)

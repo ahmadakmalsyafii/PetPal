@@ -2,7 +2,7 @@ package com.example.petpal.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
-val PetPalDarkGreen = Color(0xFF2D3E36) // Warna Utama (Tombol Masuk)
+val PetPalDarkGreen = Color(0xFF2C3930) // Warna Utama (Tombol Masuk)
 val PetPalGreenAccent = Color(0xFF4A685B)
 val PetPalLightGray = Color(0xFFF2F2F2) // Background Input Field
 val White = Color(0xFFFFFFFF)
