@@ -29,6 +29,7 @@ fun PetPalTextField(
     placeholder: String,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    readOnly: Boolean = false,
     trailingIcon: @Composable (() -> Unit)? = null
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -68,7 +69,8 @@ fun PetPalTextField(
             visualTransformation = visualTransformation,
             keyboardOptions = keyboardOptions,
             trailingIcon = trailingIcon,
-            singleLine = true
+            singleLine = true,
+            readOnly = readOnly
         )
     }
 }

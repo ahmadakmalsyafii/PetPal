@@ -93,5 +93,7 @@ dependencies {
 
     implementation("com.cloudinary:cloudinary-android:2.5.0")
 
+    implementation("com.google.accompanist:accompanist-swiperefresh:0.30.1")
+
 
 }

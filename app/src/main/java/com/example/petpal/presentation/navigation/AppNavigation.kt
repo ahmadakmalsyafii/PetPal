@@ -4,8 +4,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -19,6 +19,7 @@ import com.example.petpal.presentation.component.PetPalBottomBar
 import com.example.petpal.presentation.view.AddPetScreen
 import com.example.petpal.presentation.view.ChangePasswordScreen
 import com.example.petpal.presentation.view.EditProfileScreen
+import com.example.petpal.presentation.view.HistoryScreen
 import com.example.petpal.presentation.view.HomeScreen
 import com.example.petpal.presentation.view.LoginScreen
 import com.example.petpal.presentation.view.OnBoardingScreen
@@ -35,6 +36,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
     // Cek apakah user sudah login
 //    val startDestination = if (authRepository.currentUser != null) Screen.Home.route else Screen.OnBoarding.route
     val startDestination = Screen.Login.route
+//    val startDestination = Screen.Home.route
 
     Scaffold (
         bottomBar = { PetPalBottomBar(navController) }
@@ -109,8 +111,9 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             }
 
             composable(Screen.Riwayat.route) {
-                // Placeholder Halaman Riwayat
-                Text("Halaman Riwayat")
+                HistoryScreen(
+                    onNavigateToHistory = { navController.navigate(Screen.Riwayat.route)},
+                )
             }
             composable(Screen.Profile.route) {
                 ProfileScreen(

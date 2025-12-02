@@ -1,17 +1,22 @@
 package com.example.petpal.presentation.view
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,12 +29,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.petpal.presentation.component.PetPalPrimaryButton
 import com.example.petpal.presentation.component.PetPalTextField
+import com.example.petpal.presentation.theme.BlackText
 import com.example.petpal.presentation.theme.PetPalDarkGreen
 import com.example.petpal.presentation.viewmodel.PetViewModel
+import com.example.petpal.utils.ImageUtils
 import com.example.petpal.utils.UiState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,10 +57,22 @@ fun AddPetScreen(
     var notes by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
 
-    // Image Picker
-    val pickerLauncher = rememberLauncherForActivityResult(
+    var showImageSourceDialog by remember { mutableStateOf(false) }
+    var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
+
+    // Launcher Galeri
+    val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
-    ) { uri -> imageUri = uri }
+    ) { uri -> if (uri != null) imageUri = uri }
+
+    // Launcher Kamera
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && tempCameraUri != null) {
+            imageUri = tempCameraUri
+        }
+    }
 
     // Handle Success
     LaunchedEffect(addState) {
@@ -66,13 +86,59 @@ fun AddPetScreen(
         }
     }
 
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // Izin diberikan, langsung buka kamera
+            val uri = ImageUtils.getImageUri(context)
+            tempCameraUri = uri
+            cameraLauncher.launch(uri)
+        } else {
+            Toast.makeText(context, "Izin kamera diperlukan", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Dialog Pilihan Sumber
+    if (showImageSourceDialog) {
+        AlertDialog(
+            onDismissRequest = { showImageSourceDialog = false },
+            title = { Text("Ambil Foto Hewan") },
+            text = {
+                Column {
+                    ListItem(
+                        headlineContent = { Text("Ambil Foto") },
+                        leadingContent = { Icon(Icons.Default.CameraAlt, null) },
+                        modifier = Modifier.clickable {
+                            showImageSourceDialog = false
+                            val uri = ImageUtils.getImageUri(context)
+                            tempCameraUri = uri
+                            cameraLauncher.launch(uri)
+                        }
+                    )
+                    ListItem(
+                        headlineContent = { Text("Pilih dari Galeri") },
+                        leadingContent = { Icon(Icons.Default.PhotoLibrary, null) },
+                        modifier = Modifier.clickable {
+                            showImageSourceDialog = false
+                            galleryLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        }
+                    )
+                }
+            },
+            confirmButton = {}
+        )
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Tambah Hewan", fontWeight = FontWeight.Bold) },
+                title = { Text("Tambah Hewan", fontWeight = FontWeight.Bold,color = PetPalDarkGreen,) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali", tint = PetPalDarkGreen)
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
@@ -85,7 +151,7 @@ fun AddPetScreen(
                 .background(Color.White)
                 .padding(paddingValues)
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState()), // SCROLLABLE FORM
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Foto Picker
@@ -113,14 +179,27 @@ fun AddPetScreen(
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
-            Button(
-                onClick = { pickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
-                colors = ButtonDefaults.buttonColors(containerColor = PetPalDarkGreen),
-                shape = RoundedCornerShape(20.dp),
-                modifier = Modifier.height(36.dp)
-            ) {
-                Text("Tambah Foto", fontSize = 12.sp)
-            }
+
+            PetPalPrimaryButton(
+                text = "Ganti Photo",
+                onClick = { // Cek Izin sebelum membuka kamera
+                    val permissionCheck = ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.CAMERA
+                    )
+                    if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+                        val uri = ImageUtils.getImageUri(context)
+                        tempCameraUri = uri
+                        cameraLauncher.launch(uri)
+                    } else {
+                        // Minta izin
+                        permissionLauncher.launch(Manifest.permission.CAMERA)
+                    }
+                },
+                modifier = Modifier
+                    .height(36.dp)
+                    .width(160.dp)
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -138,13 +217,13 @@ fun AddPetScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Checkbox Gender
-            Text("Jenis Kelamin", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, modifier = Modifier.align(Alignment.Start))
+            Text("Jenis Kelamin", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, modifier = Modifier.align(Alignment.Start), color = BlackText)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(checked = gender == "Jantan", onCheckedChange = { if (it) gender = "Jantan" })
-                Text("Jantan")
+                Text("Jantan", color = PetPalDarkGreen)
                 Spacer(modifier = Modifier.width(16.dp))
                 Checkbox(checked = gender == "Betina", onCheckedChange = { if (it) gender = "Betina" })
-                Text("Betina")
+                Text("Betina", color = PetPalDarkGreen)
             }
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -156,7 +235,7 @@ fun AddPetScreen(
                     text = "Simpan",
                     onClick = {
                         if (name.isNotEmpty() && type.isNotEmpty()) {
-                            viewModel.addPet(name, type, age, notes, gender, imageUri)
+                            viewModel.addPet(name, type, age,gender, notes, imageUri)
                         } else {
                             Toast.makeText(context, "Nama dan Jenis wajib diisi", Toast.LENGTH_SHORT).show()
                         }

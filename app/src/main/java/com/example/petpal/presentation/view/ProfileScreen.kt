@@ -28,7 +28,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.petpal.R
 import com.example.petpal.data.model.User
+import com.example.petpal.presentation.component.PetPalOutlinedButton
 import com.example.petpal.presentation.component.PetPalPrimaryButton
+import com.example.petpal.presentation.component.ProfileInfoCard
+import com.example.petpal.presentation.theme.BlackText
 import com.example.petpal.presentation.theme.PetPalDarkGreen
 import com.example.petpal.presentation.viewmodel.AuthViewModel
 import com.example.petpal.utils.UiState
@@ -50,32 +53,25 @@ fun ProfileScreen(
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
-            title = { Text(text = "Keluar", fontWeight = FontWeight.Bold, textAlign = TextAlign.Center) },
-            text = { Text(text = "Konfirmasi Keluar?", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) },
+            title = { Text(text = "Keluar", fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = BlackText) },
+            text = { Text(text = "Konfirmasi Keluar?", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(), color = BlackText) },
             confirmButton = {
-                Button(
+                PetPalPrimaryButton(
+                    text = "Keluar",
                     onClick = {
                         showLogoutDialog = false
                         viewModel.logout()
                         onLogout()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = PetPalDarkGreen),
-                    shape = RoundedCornerShape(24.dp),
-                    modifier = Modifier.width(100.dp)
-                ) {
-                    Text("Keluar")
-                }
+                    modifier = Modifier.width(128.dp).height(40.dp)
+                )
             },
             dismissButton = {
-                OutlinedButton(
+                PetPalOutlinedButton(
+                    text = "Batal",
                     onClick = { showLogoutDialog = false },
-                    shape = RoundedCornerShape(24.dp),
-                    modifier = Modifier.width(100.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Color.Black),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
-                ) {
-                    Text("Batal")
-                }
+                    modifier = Modifier.width(128.dp).height(40.dp)
+                )
             },
             containerColor = Color.White,
             shape = RoundedCornerShape(16.dp)
@@ -96,6 +92,7 @@ fun ProfileScreen(
                 text = "Profil",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
+                color = PetPalDarkGreen,
                 modifier = Modifier.align(Alignment.Center)
             )
             IconButton(
@@ -126,69 +123,30 @@ fun ProfileScreen(
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-
-                // Nama Besar
-                Text(
-                    text = user.name.ifEmpty { "Pengguna" },
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = PetPalDarkGreen
-                )
+                Text(user.name.ifEmpty { "Pengguna Baru" }, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = PetPalDarkGreen)
 
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Info Cards
-                ProfileInfoCard(icon = Icons.Default.Person, label = "Nama Lengkap", value = user.name)
+                ProfileInfoCard(Icons.Default.Person, "Nama Lengkap", user.name)
                 Spacer(modifier = Modifier.height(12.dp))
-                ProfileInfoCard(icon = Icons.Default.Email, label = "Email", value = user.email)
+                ProfileInfoCard(Icons.Default.Email, "Email", user.email)
                 Spacer(modifier = Modifier.height(12.dp))
-                ProfileInfoCard(icon = Icons.Default.Phone, label = "Telepon", value = user.phoneNumber)
+                ProfileInfoCard(Icons.Default.Phone, "Telepon", user.phoneNumber)
                 Spacer(modifier = Modifier.height(12.dp))
-                ProfileInfoCard(icon = Icons.Default.LocationOn, label = "Lokasi", value = user.location)
+                ProfileInfoCard(Icons.Default.LocationOn, "Lokasi", user.location)
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Tombol Daftar Hewan (Sesuai UI)
-                PetPalPrimaryButton(
-                    text = "Daftar Hewan",
-                    onClick = onNavigateToPetList
-                )
+                PetPalPrimaryButton(text = "Daftar Hewan", onClick = onNavigateToPetList)
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                // Tombol Keluar
-                TextButton(
-                    onClick = { showLogoutDialog = true },
-                    modifier = Modifier.padding(bottom = 16.dp)
-                ) {
-                    Icon(imageVector = Icons.Default.ExitToApp, contentDescription = null, tint = Color.Black)
+                TextButton(onClick = { showLogoutDialog = true }, modifier = Modifier.padding(bottom = 16.dp)) {
+                    Icon(Icons.Default.ExitToApp, null, tint = Color.Black)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Keluar", color = Color.Black, fontWeight = FontWeight.Bold)
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun ProfileInfoCard(icon: ImageVector, label: String, value: String) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(imageVector = icon, contentDescription = null, tint = PetPalDarkGreen, modifier = Modifier.size(24.dp))
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(text = label, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                Text(text = value.ifEmpty { "-" }, fontSize = 14.sp, color = Color.Gray)
             }
         }
     }

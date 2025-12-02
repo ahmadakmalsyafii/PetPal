@@ -60,13 +60,14 @@ fun ChangePasswordScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onNavigateBack) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
+                Icon(Icons.Default.ArrowBack, contentDescription = "Kembali", tint = PetPalDarkGreen)
             }
             Text(
                 text = "Edit Profil", // Sesuai UI gambarnya tulisannya Edit Profil meski isinya password
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f),
+                color = PetPalDarkGreen,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
             Spacer(modifier = Modifier.width(48.dp))
