@@ -36,6 +36,7 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.petpal.data.model.User
+import com.example.petpal.presentation.component.PetPalOutlinedButton
 import com.example.petpal.presentation.component.PetPalPrimaryButton
 import com.example.petpal.presentation.component.PetPalTextField
 import com.example.petpal.presentation.theme.PetPalDarkGreen
@@ -170,8 +171,8 @@ fun EditProfileScreen(
     ) {
         // Toolbar
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, "Kembali") }
-            Text("Edit Profil", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+            IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, "Kembali", tint = PetPalDarkGreen) }
+            Text("Edit Profil", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = PetPalDarkGreen,modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
             Spacer(modifier = Modifier.width(48.dp))
         }
 
@@ -193,7 +194,7 @@ fun EditProfileScreen(
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         PetPalPrimaryButton(
             text = "Ganti Photo",
             onClick = { // Cek Izin sebelum membuka kamera
@@ -244,11 +245,9 @@ fun EditProfileScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
+        PetPalOutlinedButton(
             text = "Ganti Password",
-            fontWeight = FontWeight.Bold,
-            color = Color.Black,
-            modifier = Modifier.clickable { onNavigateToChangePassword() }
+            onClick = {onNavigateToChangePassword()}
         )
     }
 }

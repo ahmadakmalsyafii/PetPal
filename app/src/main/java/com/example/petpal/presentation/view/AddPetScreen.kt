@@ -34,6 +34,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.petpal.presentation.component.PetPalPrimaryButton
 import com.example.petpal.presentation.component.PetPalTextField
+import com.example.petpal.presentation.theme.BlackText
 import com.example.petpal.presentation.theme.PetPalDarkGreen
 import com.example.petpal.presentation.viewmodel.PetViewModel
 import com.example.petpal.utils.ImageUtils
@@ -134,10 +135,10 @@ fun AddPetScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Tambah Hewan", fontWeight = FontWeight.Bold) },
+                title = { Text("Tambah Hewan", fontWeight = FontWeight.Bold,color = PetPalDarkGreen,) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali", tint = PetPalDarkGreen)
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
@@ -216,13 +217,13 @@ fun AddPetScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Checkbox Gender
-            Text("Jenis Kelamin", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, modifier = Modifier.align(Alignment.Start))
+            Text("Jenis Kelamin", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, modifier = Modifier.align(Alignment.Start), color = BlackText)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(checked = gender == "Jantan", onCheckedChange = { if (it) gender = "Jantan" })
-                Text("Jantan")
+                Text("Jantan", color = PetPalDarkGreen)
                 Spacer(modifier = Modifier.width(16.dp))
                 Checkbox(checked = gender == "Betina", onCheckedChange = { if (it) gender = "Betina" })
-                Text("Betina")
+                Text("Betina", color = PetPalDarkGreen)
             }
 
             Spacer(modifier = Modifier.height(32.dp))

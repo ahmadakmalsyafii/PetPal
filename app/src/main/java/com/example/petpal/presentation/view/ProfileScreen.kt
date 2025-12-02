@@ -28,8 +28,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.petpal.R
 import com.example.petpal.data.model.User
+import com.example.petpal.presentation.component.PetPalOutlinedButton
 import com.example.petpal.presentation.component.PetPalPrimaryButton
 import com.example.petpal.presentation.component.ProfileInfoCard
+import com.example.petpal.presentation.theme.BlackText
 import com.example.petpal.presentation.theme.PetPalDarkGreen
 import com.example.petpal.presentation.viewmodel.AuthViewModel
 import com.example.petpal.utils.UiState
@@ -51,32 +53,25 @@ fun ProfileScreen(
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
-            title = { Text(text = "Keluar", fontWeight = FontWeight.Bold, textAlign = TextAlign.Center) },
-            text = { Text(text = "Konfirmasi Keluar?", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) },
+            title = { Text(text = "Keluar", fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = BlackText) },
+            text = { Text(text = "Konfirmasi Keluar?", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(), color = BlackText) },
             confirmButton = {
-                Button(
+                PetPalPrimaryButton(
+                    text = "Keluar",
                     onClick = {
                         showLogoutDialog = false
                         viewModel.logout()
                         onLogout()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = PetPalDarkGreen),
-                    shape = RoundedCornerShape(24.dp),
-                    modifier = Modifier.width(100.dp)
-                ) {
-                    Text("Keluar")
-                }
+                    modifier = Modifier.width(128.dp).height(40.dp)
+                )
             },
             dismissButton = {
-                OutlinedButton(
+                PetPalOutlinedButton(
+                    text = "Batal",
                     onClick = { showLogoutDialog = false },
-                    shape = RoundedCornerShape(24.dp),
-                    modifier = Modifier.width(100.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Color.Black),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
-                ) {
-                    Text("Batal")
-                }
+                    modifier = Modifier.width(128.dp).height(40.dp)
+                )
             },
             containerColor = Color.White,
             shape = RoundedCornerShape(16.dp)
@@ -88,7 +83,8 @@ fun ProfileScreen(
             .fillMaxSize()
             .background(Color(0xFFF5F5F5)) // Background abu-abu muda
             .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .windowInsetsPadding(WindowInsets.systemBars),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Header (Title & Edit Icon)
@@ -97,6 +93,7 @@ fun ProfileScreen(
                 text = "Profil",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
+                color = PetPalDarkGreen,
                 modifier = Modifier.align(Alignment.Center)
             )
             IconButton(

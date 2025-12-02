@@ -24,6 +24,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.petpal.R
 import com.example.petpal.presentation.component.PetCard
 import com.example.petpal.presentation.component.PetPalPrimaryButton
+import com.example.petpal.presentation.theme.PetPalDarkGreen
 import com.example.petpal.presentation.viewmodel.PetViewModel
 import com.example.petpal.utils.UiState
 
@@ -43,15 +44,15 @@ fun PetListScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Daftar Hewan", fontWeight = FontWeight.Bold) },
+                title = { Text("Daftar Hewan", fontWeight = FontWeight.Bold, color = PetPalDarkGreen,) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali", tint = PetPalDarkGreen)
                     }
                 },
                 actions = {
                     IconButton(onClick = onNavigateToAddPet) {
-                        Icon(Icons.Default.Add, contentDescription = "Tambah")
+                        Icon(Icons.Default.Add, contentDescription = "Tambah", tint = PetPalDarkGreen)
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
