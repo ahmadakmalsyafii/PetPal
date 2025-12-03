@@ -3,7 +3,6 @@ package com.example.petpal.presentation.view
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,6 +28,7 @@ import com.example.petpal.presentation.theme.BlackText
 import com.example.petpal.presentation.theme.White
 import com.example.petpal.utils.UiState
 import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.example.petpal.R
 import com.google.accompanist.swiperefresh.SwipeRefreshState
 
 
@@ -70,10 +70,10 @@ fun HomeScreen(
             //carousel
             item {
                 PetPalCarousel(
-                    images = listOf(
-                        "https://picsum.photos/600/400",
-                        "https://picsum.photos/600/400",
-                        "https://picsum.photos/600/400"
+                    imageDrawables  = listOf(
+                        R.drawable.carousel1,
+                        R.drawable.carousel2,
+                        R.drawable.carousel3
                     ),
                     modifier = Modifier
                         .fillMaxWidth()

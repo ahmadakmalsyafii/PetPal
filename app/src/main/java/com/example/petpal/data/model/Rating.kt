@@ -4,5 +4,6 @@ data class Rating(
     var name: String = "",
     var rating: Int = 0,
     var review: String = "",
-    var photoUrl: String = ""
+    var photoUrl: String = "",
+    var orderId: String = ""
 )
