@@ -26,14 +26,14 @@ class OrderRepository {
         result(UiState.Loading)
 
         orderCollection
-            .whereEqualTo("owner_id", userId)
+            .whereEqualTo("ownerId", userId)
             .get()
             .addOnSuccessListener { snapshot ->
                 val list = snapshot.documents.mapNotNull { doc ->
                     doc.toObject(Order::class.java)?.copy(id = doc.id)
                 }
                     .filter { order ->
-                        order.status != "completed"
+                        order.status.lowercase() != "completed"
                     }
                 result(UiState.Success(list))
             }
@@ -54,14 +54,14 @@ class OrderRepository {
         result(UiState.Loading)
 
         orderCollection
-            .whereEqualTo("owner_id", userId)
+            .whereEqualTo("ownerId", userId)
             .get()
             .addOnSuccessListener { snapshot ->
                 val list = snapshot.documents.mapNotNull { doc ->
                     doc.toObject(Order::class.java)?.copy(id = doc.id)
                 }
                     .filter { order ->
-                        order.status == "completed"
+                        order.status.lowercase() == "completed"
                     }
                 result(UiState.Success(list))
             }
@@ -82,7 +82,7 @@ class OrderRepository {
         result(UiState.Loading)
 
         orderCollection
-            .whereEqualTo("owner_id", userId)
+            .whereEqualTo("ownerId", userId)
             .get()
             .addOnSuccessListener { snapshot ->
                 val list = snapshot.documents.mapNotNull { doc ->
@@ -164,7 +164,7 @@ class OrderRepository {
             val userId = auth.currentUser?.uid ?: return null
 
             val snapshot = orderCollection
-                .whereEqualTo("owner_id", userId)
+                .whereEqualTo("ownerId", userId)
                 .whereIn("status", listOf("Pending", "Accepted"))
                 .limit(1)
                 .get()
@@ -190,7 +190,7 @@ class OrderRepository {
             val doc = orderCollection.document() // auto generate ID
             val finalOrder = order.copy(
                 id = doc.id,
-                owner_id = userId,
+                ownerId = userId,
                 status = "Accepted" // Set initial status
             )
 

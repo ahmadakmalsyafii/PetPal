@@ -68,7 +68,7 @@ fun BranchSelectionScreen(
                 iconRes = R.drawable.icon_branchoption_foreground,
                 title = "Cabang 1 : PetPal Prime",
                 address = "Taman Borobudur 1 Blok E Nomor 9, Kelapa Dua, Tangerang",
-                onClick = { onBranchSelected("Cabang 1 : PetPal Prime") }
+                onClick = { onBranchSelected("PetPal Prime") }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -77,7 +77,7 @@ fun BranchSelectionScreen(
                 iconRes = R.drawable.icon_branchoption_foreground,
                 title = "Cabang 2 : PetPal Next",
                 address = "Jalan Sigura-Gura V Nomor 5, Lowokwaru, Malang",
-                onClick = { onBranchSelected("Cabang 2 : PetPal Next") }
+                onClick = { onBranchSelected("PetPal Next") }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -86,7 +86,7 @@ fun BranchSelectionScreen(
                 iconRes = R.drawable.icon_branchoption_foreground,
                 title = "Cabang 3 : PetPal Lux",
                 address = "Jalan Camp Nou Nomor 6, Barcelona, Spain",
-                onClick = { onBranchSelected("Cabang 3 : PetPal Lux") }
+                onClick = { onBranchSelected("PetPal Lux") }
             )
         }
     }

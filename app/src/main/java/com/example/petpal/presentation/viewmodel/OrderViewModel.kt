@@ -94,16 +94,16 @@ class OrderViewModel : ViewModel() {
                 val petId = pets.joinToString(",") { it.id }
 
                 val order = Order(
-                    pet_id = petId,
+                    petId = petId,
                     branch = branch,
                     service = serviceType,
-                    start_time = startTimestamp,
-                    end_time = endTimestamp,
+                    startTime = startTimestamp,
+                    endTime = endTimestamp,
                     notes = notes,
                     status = "Accepted",
                     price = totalPrice,
                     tier = tier,
-                    owner_id = "" // Will be set by repository
+                    ownerId = "" // Will be set by repository
                 )
 
                 val result = repository.createOrderSuspend(order)
