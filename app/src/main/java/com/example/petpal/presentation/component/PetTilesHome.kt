@@ -1,4 +1,4 @@
-package com.example.petpal.ui.components
+package com.example.petpal.presentation.component
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -119,7 +119,8 @@ fun PetCard(
 @Composable
 fun AllPetsCard(
     modifier: Modifier = Modifier,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+
 ) {
     Card(
         modifier = modifier
@@ -131,7 +132,7 @@ fun AllPetsCard(
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = "All Pets",

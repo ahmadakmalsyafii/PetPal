@@ -52,6 +52,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.firebase.database)
     implementation(libs.firebase.auth)
+    implementation(libs.androidx.compose.foundation)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -89,6 +90,7 @@ dependencies {
 
 //    implementation ("androidx.compose.material:material-icons-extended:<version>")
     implementation ("androidx.compose.material:material:1.9.5")
+    implementation("androidx.compose.material3:material3:1.2.0")
 
 
     implementation("com.cloudinary:cloudinary-android:2.5.0")

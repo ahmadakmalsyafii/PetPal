@@ -98,14 +98,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             // HOME
             composable(Screen.Home.route) {
                 HomeScreen(
-                    onLogout = {
-                        authRepository.logout()
-                        // Kembali ke Login dan hapus history Home
-                        navController.navigate(Screen.Login.route) {
-                            popUpTo(Screen.Home.route) { inclusive = true }
-                            launchSingleTop = true
-                        }
-                    }
+
                 )
             }
 
@@ -151,7 +144,8 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             composable(Screen.PetList.route) {
                 PetListScreen(
                     onNavigateBack = { navController.popBackStack() },
-                    onNavigateToAddPet = { navController.navigate(Screen.AddPet.route) }
+                    onNavigateToAddPet = { navController.navigate(Screen.AddPet.route) },
+                    onNavigateToAllPets = {navController.navigate(Screen.PetList.route)}
                 )
             }
 
